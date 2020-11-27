@@ -1,0 +1,9 @@
+[0;30m[2020-11-27 15:57:25] [INFO] dataset : sdd[0m
+[0;30m[2020-11-27 15:57:25] [INFO] prototype number : 50[0m
+[0;30m[2020-11-27 15:57:25] [INFO] batch_size : 3000[0m
+[0;30m[2020-11-27 15:57:25] [INFO] epoch_size : 200[0m
+[0;34m[2020-11-27 15:57:25] [DEBUG] =====starting on ['SDD']=======[0m
+[0;32m[2020-11-27 15:57:25] [WARNING] =====Mission: Classification=======[0m
+[0;32m[2020-11-27 15:57:25] [WARNING] =====k_fold: 1=======[0m
+[0;30m[2020-11-27 16:03:51] [INFO] Training acc of traditional FNN: 0.6503300666809082[0m
+[0;30m[2020-11-27 16:03:51] [INFO] Test acc of test traditional FNN: 0.6430219411849976[0m
