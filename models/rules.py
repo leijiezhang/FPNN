@@ -1,8 +1,8 @@
 from sklearn.cluster import KMeans
 from scipy.spatial.distance import cdist
 import torch
-# from skfuzzy.cluster import cmeans, cmeans_predict
 import abc
+from kmeans_pytorch import kmeans
 
 
 class RuleBase(object):
@@ -68,11 +68,16 @@ class RuleKmeans(RuleBase):
         :param x: the data where rules are generated
         :param n_rules: number of the rules, namely the number of cluster centers
         """
-        kmeans = KMeans(n_clusters=n_rules, init="random", random_state=420).fit(x)
+        cluster_ids_x, cluster_centers = kmeans(
+            X=x, num_clusters=n_rules, distance='euclidean', device=torch.device(x.device)
+        )
+        # kmeans = KMeans(n_clusters=n_rules, init="random", random_state=420).fit(x)
         self.n_rules = n_rules
-        self.center_list = torch.tensor(kmeans.cluster_centers_).float()
+        # self.center_list = torch.tensor(kmeans.cluster_centers_).float()
+        self.center_list = cluster_centers.to(x.device)
         self.consequent_list = None
-        self.x_center_idx = torch.tensor(kmeans.labels_)
+        # self.x_center_idx = torch.tensor(kmeans.labels_)
+        self.x_center_idx = cluster_ids_x.to(x.device)
         self.widths_list = self.get_widths_list(x)
 
     def get_widths_list(self, x):
@@ -82,7 +87,7 @@ class RuleKmeans(RuleBase):
         :return std: standard deviation of each clusters
         """
         # get the std of data x
-        std = torch.empty((0, x.shape[1])).float()
+        std = torch.empty((0, x.shape[1])).to(x.device)
         for i in range(self.n_rules):
             mask = self.x_center_idx == i
             cluster_samples = x[mask]
@@ -102,7 +107,7 @@ class RuleKmeans(RuleBase):
         """
         self.center_list = center
         self.n_rules = center.shape[0]
-        x_dist = torch.tensor(cdist(x, center))
+        x_dist = torch.tensor(cdist(x, center)).to(x.device)
         center_idx = torch.argmin(x_dist, 1)
         self.x_center_idx = center_idx
         self.widths_list = self.get_widths_list(x)
@@ -114,7 +119,7 @@ class RuleKmeans(RuleBase):
         :param x: the data where rules are generated
         :return: None
         """
-        new_center = torch.zeros((self.center_list.shape[0], self.center_list.shape[1])).float()
+        new_center = torch.zeros((self.center_list.shape[0], self.center_list.shape[1])).to(x.device)
         for k in torch.arange(self.n_rules):
             label_ids = torch.where(self.x_center_idx == k)
             # if no sample is related to this center

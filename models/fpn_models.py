@@ -8,7 +8,7 @@ class FPN_c(torch.nn.Module):
     This is the FPN based on BP, I reform the FPN net referring to the graph attention network.
     """
 
-    def __init__(self, prototypes: torch.Tensor, n_cls):
+    def __init__(self, prototypes: torch.Tensor, n_cls, device):
         """
 
         :param prototypes:
@@ -21,11 +21,12 @@ class FPN_c(torch.nn.Module):
 
         # parameters in network
         # self.proto = torch.autograd.Variable(prototypes, requires_grad=False)
-        self.proto = nn.Parameter(prototypes, requires_grad=True)
+        self.proto = nn.Parameter(prototypes, requires_grad=True).to(device)
+
         # self.proto_reform = torch.autograd.Variable(prototypes, requires_grad=True)
         # self.data_reform = torch.autograd.Variable(prototypes, requires_grad=True)
-        self.fire_strength_ini = torch.autograd.Variable(torch.empty(self.n_rules, self.n_fea), requires_grad=True)
-        self.fire_strength = torch.autograd.Variable(torch.empty(self.n_rules, self.n_fea), requires_grad=True)
+        self.fire_strength_ini = torch.autograd.Variable(torch.empty(self.n_rules, self.n_fea), requires_grad=True).to(device)
+        self.fire_strength = torch.autograd.Variable(torch.empty(self.n_rules, self.n_fea), requires_grad=True).to(device)
         # if torch.cuda.is_available():
         #     self.proto = self.proto.cuda()
         #     self.proto_reform = self.proto_reform.cuda()
@@ -36,17 +37,17 @@ class FPN_c(torch.nn.Module):
             torch.nn.ReLU(),
             torch.nn.Linear(self.n_fea, 1),
             # torch.nn.Tanh()
-        )
-        self.w_layer = nn.Linear(self.n_fea, self.n_fea)
+        ).to(device)
+        self.w_layer = nn.Linear(self.n_fea, self.n_fea).to(device)
 
         # parameters in consequent layer
 
         # self.fire_strength_active = nn.LeakyReLU(0.005)
-        self.relu_active = nn.ReLU()
+        self.relu_active = nn.ReLU().to(device)
         self.leak_relu_active = nn.functional.leaky_relu
-        self.batch_norm = torch.nn.BatchNorm1d(self.n_rules)
+        self.batch_norm = torch.nn.BatchNorm1d(self.n_rules).to(device)
         # parameters in consequent layer
-        self.consq_layers = [nn.Linear(self.n_fea, n_cls) for _ in range(self.n_rules)]
+        self.consq_layers = [nn.Linear(self.n_fea, n_cls).to(device) for _ in range(self.n_rules)]
         for i, consq_layers_item in enumerate(self.consq_layers):
             self.add_module('para_consq_{}'.format(i), consq_layers_item)
 

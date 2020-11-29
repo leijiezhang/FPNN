@@ -45,8 +45,8 @@ class Map(LossFunc):
         super().__init__()
 
     def forward(self, y, yhat):
-        y_ones = torch.ones(y.shape)
-        y_zeros = torch.zeros(y.shape)
+        y_ones = torch.ones(y.shape).to(y.device)
+        y_zeros = torch.zeros(y.shape).to(y.device)
         acc_num = torch.where(yhat == y, y_ones, y_zeros).sum()
         acc = acc_num / y.shape[0]
         return acc
@@ -62,8 +62,8 @@ class LikelyLoss(LossFunc):
     def forward(self, y, yhat):
         yhat = torch.round(yhat)
         yhat = torch.where(yhat > max(y), max(y), yhat)
-        y_ones = torch.ones(y.shape)
-        y_zeros = torch.zeros(y.shape)
+        y_ones = torch.ones(y.shape).to(y.device)
+        y_zeros = torch.zeros(y.shape).to(y.device)
         acc_num = torch.where(yhat == y, y_ones, y_zeros).sum()
         acc = (acc_num / y.shape[0])
         return acc

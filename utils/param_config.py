@@ -19,6 +19,7 @@ class ParamConfig(object):
 
         self.dataset_list = ['CASP']
         self.dataset_folder = 'hrss'
+        self.device = 'cuda:0'
 
         # set learning rate
         self.lr = 0
@@ -31,6 +32,9 @@ class ParamConfig(object):
         config_content = yaml.load(config_file, Loader=yaml.FullLoader)
 
         self.model_name = config_content['model']
+        self.device = config_content['device']
+        if not torch.cuda.is_available():
+            self.device = 'cpu'
         self.n_batch = config_content['n_batch']
         self.n_epoch = config_content['n_epoch']
         self.n_kfolds = config_content['n_kfolds']
@@ -75,13 +79,14 @@ class ParamConfig(object):
 
         load_data = sio.loadmat(dir_dataset)
         dataset_name = load_data['name']
-        fea: torch.Tensor = torch.tensor(load_data['X']).float()
-        gnd: torch.Tensor = torch.tensor(load_data['Y'].astype(np.float32)).float()
+        fea: torch.Tensor = torch.tensor(load_data['X']).float().to(self.device)
+        gnd: torch.Tensor = torch.tensor(load_data['Y'].astype(np.float32)).float().to(self.device)
 
         if len(gnd.shape) == 1:
             gnd = gnd.unsqueeze(1)
 
-        task = load_data['task']
+        task = load_data['task'][0]
+
         dataset = Dataset(fea, gnd, task, dataset_name)
 
         # set partition strategy

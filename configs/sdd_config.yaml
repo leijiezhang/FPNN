@@ -1,5 +1,6 @@
 model: 'fpn' #
 
+device: 'cuda:0' # 'cpu' 'cuda:0'
 n_batch: 3000
 n_epoch: 200
 n_kfolds: 5

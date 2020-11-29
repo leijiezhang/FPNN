@@ -16,7 +16,7 @@ from models.fpn_models import FPN_c, FPN
 # from models import FPN_c, FPN
 
 from dataset import DatasetTorch
-from mlp_model import MLP, dev_network_s, dev_network_sr, dev_network_s_r
+from mlp_model import MLP, dev_network_s, dev_network_sr, dev_network_s_r, MLP_c
 import scipy.io as io
 import keras
 from h_utils import HNormal
@@ -692,8 +692,8 @@ def fpn_run_c(param_config: ParamConfig, train_data: Dataset, test_data: Dataset
     # prototype_list = torch.ones(param_config.n_rules, train_data.n_fea)
     # prototype_list = train_data.fea[torch.randperm(train_data.n_smpl)[0:param_config.n_rules], :]
     n_cls = train_data.gnd.unique().shape[0]
-    fpn_model: nn.Module = FPN_c(prototype_list, n_cls)
-    fpn_model = fpn_model.cuda()
+    fpn_model: nn.Module = FPN_c(prototype_list, n_cls, param_config.device)
+    # fpn_model = fpn_model.cuda()
     # initiate model parameter
     # fpn_model.proto_reform_w.data = torch.eye(train_data.fea.shape[1])
     # model.proto_reform_layer.bias.data = torch.zeros(train_data.fea.shape[1])
@@ -721,8 +721,8 @@ def fpn_run_c(param_config: ParamConfig, train_data: Dataset, test_data: Dataset
         fpn_model.train()
 
         for i, (data, labels) in enumerate(train_loader):
-            data = data.cuda()
-            labels = labels.cuda()
+            # data = data.cuda()
+            # labels = labels.cuda()
             outputs_temp = fpn_model(data, True)
             loss = loss_fn(outputs_temp, labels.squeeze().long())
             optimizer.zero_grad()
@@ -730,15 +730,15 @@ def fpn_run_c(param_config: ParamConfig, train_data: Dataset, test_data: Dataset
             optimizer.step()
 
         fpn_model.eval()
-        outputs_train = torch.empty(0, n_cls).cuda()
-        outputs_val = torch.empty(0, n_cls).cuda()
+        outputs_train = torch.empty(0, n_cls).to(param_config.device)
+        outputs_val = torch.empty(0, n_cls).to(param_config.device)
 
-        gnd_train = torch.empty(0, 1).cuda()
-        gnd_val = torch.empty(0, 1).cuda()
+        gnd_train = torch.empty(0, 1).to(param_config.device)
+        gnd_val = torch.empty(0, 1).to(param_config.device)
         with torch.no_grad():
             for i, (data, labels) in enumerate(train_loader):
-                data = data.cuda()
-                labels = labels.cuda()
+                # data = data.cuda()
+                # labels = labels.cuda()
                 outputs_temp = fpn_model(data, False)
                 outputs_train = torch.cat((outputs_train, outputs_temp), 0)
                 gnd_train = torch.cat((gnd_train, labels), 0)
@@ -747,8 +747,8 @@ def fpn_run_c(param_config: ParamConfig, train_data: Dataset, test_data: Dataset
             acc_train = correct_train_num/gnd_train.shape[0]
             fpn_train_acc.append(acc_train)
             for i, (data, labels) in enumerate(valid_loader):
-                data = data.cuda()
-                labels = labels.cuda()
+                # data = data.cuda()
+                # labels = labels.cuda()
                 outputs_temp = fpn_model(data, False)
                 outputs_val = torch.cat((outputs_val, outputs_temp), 0)
                 gnd_val = torch.cat((gnd_val, labels), 0)
@@ -764,7 +764,7 @@ def fpn_run_c(param_config: ParamConfig, train_data: Dataset, test_data: Dataset
             f"fpn epoch : {epoch + 1}, train acc : {fpn_train_acc[-1]}, test acc : {fpn_valid_acc[-1]}")
 
     # mlp model
-    mlp_model: nn.Module = MLP(train_data.fea.shape[1]).cuda()
+    mlp_model: nn.Module = MLP_c(train_data.fea.shape[1], n_cls, param_config.device)
     optimizer = torch.optim.Adam(mlp_model.parameters(), lr=param_config.lr)
     loss_fn = nn.CrossEntropyLoss()
     epochs = param_config.n_epoch
@@ -776,8 +776,8 @@ def fpn_run_c(param_config: ParamConfig, train_data: Dataset, test_data: Dataset
         mlp_model.train()
 
         for i, (data, labels) in enumerate(train_loader):
-            data = data.cuda()
-            labels = labels.cuda()
+            # data = data.cuda()
+            # labels = labels.cuda()
             outputs = mlp_model(data)
             loss = loss_fn(outputs, labels.squeeze().long())
             optimizer.zero_grad()
@@ -785,15 +785,15 @@ def fpn_run_c(param_config: ParamConfig, train_data: Dataset, test_data: Dataset
             optimizer.step()
 
         mlp_model.eval()
-        outputs_train = torch.empty(0, n_cls).cuda()
-        outputs_val = torch.empty(0, 1).cuda()
+        outputs_train = torch.empty(0, n_cls).to(param_config.device)
+        outputs_val = torch.empty(0, n_cls).to(param_config.device)
 
-        gnd_train = torch.empty(0, n_cls).cuda()
-        gnd_val = torch.empty(0, 1).cuda()
+        gnd_train = torch.empty(0, 1).to(param_config.device)
+        gnd_val = torch.empty(0, 1).to(param_config.device)
         with torch.no_grad():
             for i, (data, labels) in enumerate(train_loader):
-                data = data.cuda()
-                labels = labels.cuda()
+                # data = data.cuda()
+                # labels = labels.cuda()
                 outputs_temp = mlp_model(data)
                 outputs_train = torch.cat((outputs_train, outputs_temp), 0)
                 gnd_train = torch.cat((gnd_train, labels), 0)
@@ -802,8 +802,8 @@ def fpn_run_c(param_config: ParamConfig, train_data: Dataset, test_data: Dataset
             acc_train = correct_train_num / gnd_train.shape[0]
             mlp_train_acc.append(acc_train)
             for i, (data, labels) in enumerate(valid_loader):
-                data = data.cuda()
-                labels = labels.cuda()
+                # data = data.cuda()
+                # labels = labels.cuda()
                 outputs_temp = mlp_model(data)
                 outputs_val = torch.cat((outputs_val, outputs_temp), 0)
                 gnd_val = torch.cat((gnd_val, labels), 0)
@@ -823,17 +823,17 @@ def fpn_run_c(param_config: ParamConfig, train_data: Dataset, test_data: Dataset
     plt.ylabel('Acc')
     # plt.plot(torch.arange(len(mlp_train_acc)), torch.tensor(mlp_train_acc), 'b--', linewidth=2, markersize=5)
     # plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_valid_acc), 'r--', linewidth=2, markersize=5)
-    plt.plot(torch.arange(len(fpn_valid_acc)), fnn_train_mse.expand_as(torch.tensor(fpn_valid_acc)),
+    plt.plot(torch.arange(len(fpn_valid_acc)), fnn_train_mse.cpu().expand_as(torch.tensor(fpn_valid_acc)),
              'b--', linewidth=2, markersize=5)
-    plt.plot(torch.arange(len(fpn_valid_acc)), fnn_test_mse.expand_as(torch.tensor(fpn_valid_acc)),
+    plt.plot(torch.arange(len(fpn_valid_acc)), fnn_test_mse.cpu().expand_as(torch.tensor(fpn_valid_acc)),
              'r--', linewidth=2, markersize=5)
-    plt.plot(torch.arange(len(fpn_valid_acc)), torch.tensor(fpn_train_acc), 'b:', linewidth=2,
+    plt.plot(torch.arange(len(fpn_valid_acc)), torch.tensor(fpn_train_acc).cpu(), 'b:', linewidth=2,
              markersize=5)
-    plt.plot(torch.arange(len(fpn_valid_acc)), torch.tensor(fpn_valid_acc), 'r:', linewidth=2,
+    plt.plot(torch.arange(len(fpn_valid_acc)), torch.tensor(fpn_valid_acc).cpu(), 'r:', linewidth=2,
              markersize=5)
-    plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_train_acc), 'b-.', linewidth=2,
+    plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_train_acc).cpu(), 'b-.', linewidth=2,
              markersize=5)
-    plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_valid_acc), 'r-.', linewidth=2,
+    plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_valid_acc).cpu(), 'r-.', linewidth=2,
              markersize=5)
     plt.legend(['fnn train', 'fnn test', 'fpn train', 'fpn test', 'mlp train', 'mlp test'])
     # plt.legend(['fnn train', 'fnn test', 'fpn train', 'fpn test'])

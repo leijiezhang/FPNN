@@ -19,12 +19,12 @@ data_format = 0
 
 
 class MLP_c(pt.nn.Module):
-    def __init__(self, input_shape, n_cls):
+    def __init__(self, input_shape, n_cls, device):
         super(MLP_c, self).__init__()
-        self.fc1 = pt.nn.Linear(input_shape, 2*input_shape)
+        self.fc1 = pt.nn.Linear(input_shape, 2*input_shape).to(device)
 
-        self.fc2 = pt.nn.Linear(2*input_shape, input_shape)
-        self.fc3 = pt.nn.Linear(input_shape, n_cls)
+        self.fc2 = pt.nn.Linear(2*input_shape, input_shape).to(device)
+        self.fc3 = pt.nn.Linear(input_shape, n_cls).to(device)
 
     def forward(self, data):
         dout = nn.functional.relu(F.relu(self.fc1(data)))

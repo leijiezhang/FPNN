@@ -30,12 +30,12 @@ for i in torch.arange(len(param_config.dataset_list)):
         param_config.log.war(f"=====Mispara_consq_bias_rsion: Regression=======")
         param_config.loss_fun = RMSELoss()
 
-    fpn_train_loss_tsr = torch.empty(param_config.n_epoch, 0)
-    fpn_test_loss_tsr = torch.zeros(param_config.n_epoch, 0)
-    mlp_train_loss_tsr = torch.empty(param_config.n_epoch, 0)
-    mlp_test_loss_tsr = torch.zeros(param_config.n_epoch, 0)
-    fnn_train_loss_tsr = torch.empty(1, 0)
-    fnn_test_loss_tsr = torch.zeros(1, 0)
+    fpn_train_loss_tsr = torch.empty(param_config.n_epoch, 0).to(param_config.device)
+    fpn_test_loss_tsr = torch.zeros(param_config.n_epoch, 0).to(param_config.device)
+    mlp_train_loss_tsr = torch.empty(param_config.n_epoch, 0).to(param_config.device)
+    mlp_test_loss_tsr = torch.zeros(param_config.n_epoch, 0).to(param_config.device)
+    fnn_train_loss_tsr = torch.empty(1, 0).to(param_config.device)
+    fnn_test_loss_tsr = torch.zeros(1, 0).to(param_config.device)
 
     for kfold_idx in torch.arange(param_config.n_kfolds):
         param_config.log.war(f"=====k_fold: {kfold_idx + 1}=======")

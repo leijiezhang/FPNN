@@ -27,34 +27,9 @@ class FnnSolveReg(FnnSolveBase):
         h_cal = self.h.permute((1, 0, 2))  # N * n_rules * (d + 1)
         h_cal = h_cal.reshape(n_smpl, n_rule * n_fea)  # squess the last dimension
         w_comb_optimal = torch.inverse(h_cal.t().mm(h_cal) +
-                                       self.para_mu * torch.eye(n_rule * n_fea)).mm(h_cal.t().mm(self.y))
+                                       self.para_mu * torch.eye(n_rule * n_fea).to(self.h.device)).mm(h_cal.t().mm(self.y))
         w_comb_optimal = w_comb_optimal.permute((1, 0))
         w_optimal = w_comb_optimal.reshape(self.y.shape[1], n_rule, n_fea)
-
-        return w_optimal
-
-
-class FnnSolveAO(FnnSolveBase):
-    def __init__(self):
-        super(FnnSolveAO, self).__init__()
-
-    def solve(self):
-        """
-        todo: fnn solver for regression problem
-        """
-        n_rule = self.h.shape[0]
-        n_smpl = self.h.shape[1]
-        n_fea = self.h.shape[2]
-        h_cal = self.h.permute((1, 0, 2))  # N * n_rules * (d + 1)
-        h_cal = h_cal.reshape(n_smpl, n_rule * n_fea)  # squess the last dimension
-
-        loss = 100
-        th_run = 0.0001
-        while loss > th_run:
-            w_comb_optimal = torch.inverse(h_cal.t().mm(h_cal) +
-                                           self.para_mu * torch.eye(n_rule * n_fea)).mm(h_cal.t().mm(self.y))
-            w_comb_optimal = w_comb_optimal.permute((1, 0))
-            w_optimal = w_comb_optimal.reshape(self.y.shape[1], n_rule, n_fea)
 
         return w_optimal
 
