@@ -1,6 +1,6 @@
 from utils.param_config import ParamConfig
 from utils.loss_utils import RMSELoss, LikelyLoss
-from models.model_run import fpn_run, mlp_run_r, fpn_run_c
+from models.model_run import fpn_run_cls, fpn_run_reg
 import torch
 import os
 import scipy.io as io
@@ -30,19 +30,19 @@ for i in torch.arange(len(param_config.dataset_list)):
         param_config.log.war(f"=====Mispara_consq_bias_rsion: Regression=======")
         param_config.loss_fun = RMSELoss()
 
-    fpn_train_loss_tsr = torch.empty(param_config.n_epoch, 0)
-    fpn_test_loss_tsr = torch.zeros(param_config.n_epoch, 0)
-    mlp_train_loss_tsr = torch.empty(param_config.n_epoch, 0)
-    mlp_test_loss_tsr = torch.zeros(param_config.n_epoch, 0)
-    fnn_train_loss_tsr = torch.empty(1, 0)
-    fnn_test_loss_tsr = torch.zeros(1, 0)
+    fpn_train_loss_tsr = torch.empty(param_config.n_epoch, 0).to(param_config.device)
+    fpn_test_loss_tsr = torch.zeros(param_config.n_epoch, 0).to(param_config.device)
+    mlp_train_loss_tsr = torch.empty(param_config.n_epoch, 0).to(param_config.device)
+    mlp_test_loss_tsr = torch.zeros(param_config.n_epoch, 0).to(param_config.device)
+    fnn_train_loss_tsr = torch.empty(1, 0).to(param_config.device)
+    fnn_test_loss_tsr = torch.zeros(1, 0).to(param_config.device)
 
     for kfold_idx in torch.arange(param_config.n_kfolds):
         param_config.log.war(f"=====k_fold: {kfold_idx + 1}=======")
         train_data, test_data = dataset.get_kfold_data(kfold_idx)
 
         fpn_train_loss, fpn_test_loss, mlp_train_loss, mlp_test_loss, fnn_train_loss, fnn_test_loss = \
-            fpn_run_c(param_config, train_data, test_data, kfold_idx + 1)
+            fpn_run_cls(param_config, train_data, test_data, kfold_idx + 1)
 
         fpn_test_loss_tsr = torch.cat([fpn_test_loss_tsr, torch.tensor(fpn_test_loss).unsqueeze(1)], 1)
         fpn_train_loss_tsr = torch.cat([fpn_train_loss_tsr, torch.tensor(fpn_train_loss).unsqueeze(1)], 1)

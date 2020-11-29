@@ -18,9 +18,9 @@ MAX_INT = np.iinfo(np.int32).max
 data_format = 0
 
 
-class MLP_c(pt.nn.Module):
+class MlpCls(pt.nn.Module):
     def __init__(self, input_shape, n_cls, device):
-        super(MLP_c, self).__init__()
+        super(MlpCls, self).__init__()
         self.fc1 = pt.nn.Linear(input_shape, 2*input_shape).to(device)
 
         self.fc2 = pt.nn.Linear(2*input_shape, input_shape).to(device)
@@ -32,12 +32,12 @@ class MLP_c(pt.nn.Module):
         return self.fc3(dout)
 
 
-class MLP(pt.nn.Module):
-    def __init__(self, input_shape):
-        super(MLP, self).__init__()
-        self.fc1 = pt.nn.Linear(input_shape, 2*input_shape)
-        self.fc2 = pt.nn.Linear(2*input_shape, input_shape)
-        self.fc3 = pt.nn.Linear(input_shape, 1)
+class MlpReg(pt.nn.Module):
+    def __init__(self, input_shape, device):
+        super(MlpReg, self).__init__()
+        self.fc1 = pt.nn.Linear(input_shape, 2*input_shape).to(device)
+        self.fc2 = pt.nn.Linear(2*input_shape, input_shape).to(device)
+        self.fc3 = pt.nn.Linear(input_shape, 1).to(device)
 
     def forward(self, data):
         dout = F.relu(self.fc1(data))
@@ -98,6 +98,7 @@ def dev_network_sr(input_shape, output_shape):
     intermediate = Dense(1, name='score')(intermediate)
     return Model(x_input, intermediate)
 
+
 def dev_network_linear(input_shape):
     '''
     network architecture with no hidden layer, equivalent to linear mapping from
@@ -106,29 +107,3 @@ def dev_network_linear(input_shape):
     x_input = Input(shape=input_shape)
     intermediate = Dense(1, activation='linear',  name = 'score')(x_input)
     return Model(x_input, intermediate)
-
-
-# class MLP(nn.Module):
-#     def __init__(self):
-#         super(MLP, self).__init__()
-#         self.layer = nn.Sequential(
-#             nn.Linear(18, 36),
-#             nn.ReLU(),
-#             nn.Linear(36, 18),
-#             nn.ReLU(),
-#             nn.Linear(18, 2),
-#             # nn.ReLU()
-#             # nn.Sigmoid()
-#             # nn.Softmax(dim=1)
-#         )
-#         # self.layer = nn.Sequential(
-#         #     nn.Linear(18, 20),
-#         #     nn.ReLU(),
-#         #     nn.Linear(20, 1),
-#         #     nn.Sigmoid()
-#         # )
-#
-#     def forward(self, x):
-#         # convert tensor (128, 1, 28, 28) --> (128, 1*28*28)
-#         x = self.layer(x)
-#         return x
