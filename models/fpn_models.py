@@ -196,12 +196,13 @@ class FpnCov1dFSCls(torch.nn.Module):
         self.fire_strength = torch.autograd.Variable(torch.empty(self.n_rules, self.n_fea), requires_grad=True).to(device)
         n_channel = 4
         n_padding = 1
-        kernel_size = 3
+        kernel_size = 5
         pooling_size = 2
-        att_size = n_channel * torch.ceil(
-            (torch.ceil(torch.tensor(self.n_fea + 2 * n_padding + 1 - kernel_size).float() / pooling_size) +
+        att_size = n_channel * torch.floor(
+            (torch.floor(torch.tensor(self.n_fea + 2 * n_padding + 1 - kernel_size).float() / pooling_size) +
                                                 2*n_padding + 1 - kernel_size)/pooling_size)
-        self.fs_layers = RelationNetwork(int(att_size), int(att_size/2), n_channel, n_padding, kernel_size, pooling_size)
+        self.fs_layers = RelationNetwork(int(att_size), int(att_size/2), n_channel, n_padding,
+                                         kernel_size, pooling_size, device)
         self.w_layer = nn.Linear(self.n_fea, self.n_fea).to(device)
 
         # parameters in consequent layer
@@ -279,7 +280,8 @@ class FpnCov1dFSReg(torch.nn.Module):
         att_size = n_channel * torch.ceil(
             (torch.ceil(torch.tensor(self.n_fea + 2 * n_padding + 1 - kernel_size).float() / pooling_size) +
                                                 2*n_padding + 1 - kernel_size)/pooling_size)
-        self.fs_layers = RelationNetwork(int(att_size), int(att_size/2), n_channel, n_padding, kernel_size, pooling_size)
+        self.fs_layers = RelationNetwork(int(att_size), int(att_size/2), n_channel, n_padding,
+                                         kernel_size, pooling_size, device)
         self.w_layer = nn.Linear(self.n_fea, self.n_fea).to(device)
 
         # parameters in consequent layer
@@ -329,24 +331,44 @@ class FpnCov1dFSReg(torch.nn.Module):
 
 class RelationNetwork(nn.Module):
     """docstring for RelationNetwork"""
-    def __init__(self, input_size, hidden_size, n_channel, n_padding, kernel_size, pooling_size):
+    def __init__(self, input_size, hidden_size, n_channel, n_padding, kernel_size, pooling_size, device):
         super(RelationNetwork, self).__init__()
+        self.conv1d1 = nn.Conv1d(1, n_channel, kernel_size=kernel_size, padding=n_padding).to(device)
+        self.bn1 = nn.BatchNorm1d(n_channel, momentum=1, affine=True).to(device)
+        self.rl1 = nn.ReLU().to(device)
+        self.maxp1 = nn.AvgPool1d(pooling_size).to(device)
+
+        self.conv1d2 = nn.Conv1d(n_channel, n_channel, kernel_size=kernel_size, padding=n_padding).to(device)
+        self.bn2 = nn.BatchNorm1d(n_channel, momentum=1, affine=True).to(device)
+        self.rl2 = nn.ReLU().to(device)
+        self.maxp2 = nn.AvgPool1d(pooling_size).to(device)
+
         self.layer1 = nn.Sequential(
                         nn.Conv1d(1, n_channel, kernel_size=kernel_size, padding=n_padding),
                         nn.BatchNorm1d(n_channel, momentum=1, affine=True),
                         nn.ReLU(),
-                        nn.MaxPool1d(pooling_size))
+                        nn.MaxPool1d(pooling_size)).to(device)
         self.layer2 = nn.Sequential(
                         nn.Conv1d(n_channel, n_channel, kernel_size=kernel_size, padding=n_padding),
                         nn.BatchNorm1d(n_channel, momentum=1, affine=True),
                         nn.ReLU(),
-                        nn.MaxPool1d(pooling_size))
-        self.fc1 = nn.Linear(input_size, hidden_size)
-        self.fc2 = nn.Linear(hidden_size, 1)
+                        nn.MaxPool1d(pooling_size)).to(device)
+        self.fc1 = nn.Linear(input_size, hidden_size).to(device)
+        self.fc2 = nn.Linear(hidden_size, 1).to(device)
 
     def forward(self, x):
-        out = self.layer1(x.unsqueeze(1))
-        out = self.layer2(out)
+        # out = self.layer1(x.unsqueeze(1))
+        # out = self.layer2(out)
+        out = self.conv1d1(x.unsqueeze(1))
+        # out = self.bn1(out)
+        out = self.rl1(out)
+        out = self.maxp1(out)
+
+        out = self.conv1d2(out)
+        # out = self.bn2(out)
+        out = self.rl2(out)
+        out = self.maxp2(out)
+
         out = out.view(out.size(0), -1)
         out = F.relu(self.fc1(out))
         out = torch.tanh(self.fc2(out))

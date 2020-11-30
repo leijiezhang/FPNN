@@ -385,7 +385,7 @@ def fpn_run_cls(param_config: ParamConfig, train_data: Dataset, test_data: Datas
     # prototype_list = torch.ones(param_config.n_rules, train_data.n_fea)
     # prototype_list = train_data.fea[torch.randperm(train_data.n_smpl)[0:param_config.n_rules], :]
     n_cls = train_data.gnd.unique().shape[0]
-    fpn_model: nn.Module = FpnMlpFsCls(prototype_list, n_cls, param_config.device)
+    fpn_model: nn.Module = FpnCov1dFSCls(prototype_list, n_cls, param_config.device)
     # fpn_model = fpn_model.cuda()
     # initiate model parameter
     # fpn_model.proto_reform_w.data = torch.eye(train_data.fea.shape[1])
@@ -540,8 +540,8 @@ def fpn_run_cls(param_config: ParamConfig, train_data: Dataset, test_data: Datas
     save_dict["fpn_valid_acc"] = torch.tensor(fpn_valid_acc).numpy()
     save_dict["mlp_train_acc"] = torch.tensor(mlp_train_acc).numpy()
     save_dict["mlp_valid_acc"] = torch.tensor(mlp_valid_acc).numpy()
-    save_dict["fnn_train_mse"] = fnn_train_mse.numpy()
-    save_dict["fnn_test_mse"] = fnn_test_mse.numpy()
+    save_dict["fnn_train_mse"] = fnn_train_mse.cpu().numpy()
+    save_dict["fnn_test_mse"] = fnn_test_mse.cpu().numpy()
     data_save_file = f"{data_save_dir}/mse_bpfnn_{param_config.dataset_folder}_rule" \
                      f"_{param_config.n_rules}_lr_{param_config.lr:.6f}" \
                      f"_k_{current_k}.mat"
