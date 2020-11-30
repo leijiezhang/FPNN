@@ -9,7 +9,7 @@ import scipy.io as io
 # Dataset configuration
 # init the parameters statlib_calhousing_config
 param_config = ParamConfig()
-param_config.config_parse('sdd_config')
+param_config.config_parse('esr_config')
 
 param_config.log.info(f"dataset : {param_config.dataset_folder}")
 param_config.log.info(f"prototype number : {param_config.n_rules}")
@@ -42,7 +42,7 @@ for i in torch.arange(len(param_config.dataset_list)):
         train_data, test_data = dataset.get_kfold_data(kfold_idx)
 
         fpn_train_loss, fpn_test_loss, mlp_train_loss, mlp_test_loss, fnn_train_loss, fnn_test_loss = \
-            fpn_run_cls_cov(param_config, train_data, test_data, kfold_idx + 1)
+            fpn_run_cls_mlp(param_config, train_data, test_data, kfold_idx + 1)
 
         fpn_test_loss_tsr = torch.cat([fpn_test_loss_tsr, torch.tensor(fpn_test_loss).unsqueeze(1)], 1)
         fpn_train_loss_tsr = torch.cat([fpn_train_loss_tsr, torch.tensor(fpn_train_loss).unsqueeze(1)], 1)
