@@ -132,6 +132,7 @@ def svr(train_fea: torch.Tensor, test_fea: torch.Tensor, train_gnd: torch.Tensor
 
     return train_loss, test_loss
 
+
 def fpn_cls(param_config: ParamConfig, train_data: Dataset, test_data: Dataset):
     """
         todo: this is the method for fuzzy Neuron network using kmeans
