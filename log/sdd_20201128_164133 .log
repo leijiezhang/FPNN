@@ -1,0 +1,4 @@
+[0;30m[2020-11-28 16:41:33] [INFO] dataset : sdd[0m
+[0;30m[2020-11-28 16:41:33] [INFO] prototype number : 50[0m
+[0;30m[2020-11-28 16:41:33] [INFO] batch_size : 3000[0m
+[0;30m[2020-11-28 16:41:33] [INFO] epoch_size : 200[0m

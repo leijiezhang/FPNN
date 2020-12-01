@@ -1,0 +1,9 @@
+[0;30m[2020-11-30 16:58:44] [INFO] dataset : esr[0m
+[0;30m[2020-11-30 16:58:44] [INFO] prototype number : 10[0m
+[0;30m[2020-11-30 16:58:44] [INFO] batch_size : 3000[0m
+[0;30m[2020-11-30 16:58:44] [INFO] epoch_size : 200[0m
+[0;34m[2020-11-30 16:58:47] [DEBUG] =====starting on ['esr']=======[0m
+[0;32m[2020-11-30 16:58:47] [WARNING] =====Mission: Classification=======[0m
+[0;32m[2020-11-30 16:58:47] [WARNING] =====k_fold: 1=======[0m
+[0;30m[2020-11-30 16:59:28] [INFO] Accuracy of training data using SVM: 58.29%[0m
+[0;30m[2020-11-30 16:59:28] [INFO] Accuracy of test data using SVM: 56.37%[0m

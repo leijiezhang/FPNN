@@ -1,0 +1,7 @@
+[0;30m[2020-11-30 16:56:25] [INFO] dataset : esr[0m
+[0;30m[2020-11-30 16:56:25] [INFO] prototype number : 10[0m
+[0;30m[2020-11-30 16:56:25] [INFO] batch_size : 3000[0m
+[0;30m[2020-11-30 16:56:25] [INFO] epoch_size : 200[0m
+[0;34m[2020-11-30 16:56:27] [DEBUG] =====starting on ['esr']=======[0m
+[0;32m[2020-11-30 16:56:27] [WARNING] =====Mission: Classification=======[0m
+[0;32m[2020-11-30 16:56:27] [WARNING] =====k_fold: 1=======[0m
