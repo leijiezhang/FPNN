@@ -653,7 +653,7 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
     paras = dict()
     paras['kernel'] = 'rbf'
     svm_train_acc, svm_test_acc = svc(train_data.fea.cpu(), test_data.fea.cpu(), train_data.gnd.cpu(),
-    test_data.gnd.cpu(), LikelyLoss(), paras)
+        test_data.gnd.cpu(), LikelyLoss(), paras)
     param_config.log.info(f"Accuracy of training data using SVM: {svm_train_acc}")
     param_config.log.info(f"Accuracy of test data using SVM: {svm_test_acc}")
 
@@ -678,7 +678,7 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
     # fpn_model.proto_reform_w.data = torch.eye(train_data.fea.shape[1])
     # model.proto_reform_layer.bias.data = torch.zeros(train_data.fea.shape[1])
 
-    optimizer = torch.optim.Adam(fpn_model.parameters(), lr=param_config.lr)
+    optimizer = torch.optim.Adam(fpn_model.parameters(), lr=param_config.lr, weight_decay=0.001)
     # loss_fn = nn.MSELoss()
     loss_fn = nn.CrossEntropyLoss()
     epochs = param_config.n_epoch
@@ -694,8 +694,8 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
                       f"rule_{param_config.n_rules}_lr_{param_config.lr:.6f}_" \
                       f"k_{current_k}.pkl"
     # load the exist model
-    if os.path.exists(model_save_file):
-        fpn_model.load_state_dict(torch.load(model_save_file))
+    # if os.path.exists(model_save_file):
+    #     fpn_model.load_state_dict(torch.load(model_save_file))
     best_test_rslt = 0
     for epoch in range(epochs):
         fpn_model.train()
@@ -745,7 +745,7 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
 
     # mlp model
     mlp_model: nn.Module = MlpCls(train_data.fea.shape[1], n_cls, param_config.device)
-    optimizer = torch.optim.Adam(mlp_model.parameters(), lr=param_config.lr)
+    optimizer = torch.optim.Adam(mlp_model.parameters(), lr=param_config.lr, weight_decay=0.001)
     loss_fn = nn.CrossEntropyLoss()
     epochs = param_config.n_epoch
 
@@ -804,16 +804,16 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
     # plt.plot(torch.arange(len(mlp_train_acc)), torch.tensor(mlp_train_acc), 'b--', linewidth=2, markersize=5)
     # plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_valid_acc), 'r--', linewidth=2, markersize=5)
     plt.plot(torch.arange(len(fpn_valid_acc)), svm_train_acc.cpu().expand_as(torch.tensor(fpn_valid_acc)),
-             'b--', linewidth=2, markersize=5)
+             'y', linewidth=2, markersize=5)
     plt.plot(torch.arange(len(fpn_valid_acc)), svm_test_acc.cpu().expand_as(torch.tensor(fpn_valid_acc)),
-             'r--', linewidth=2, markersize=5)
-    plt.plot(torch.arange(len(fpn_valid_acc)), torch.tensor(fpn_train_acc).cpu(), 'b-.', linewidth=2,
+             'y:', linewidth=2, markersize=5)
+    plt.plot(torch.arange(len(fpn_valid_acc)), torch.tensor(fpn_train_acc).cpu(), 'r', linewidth=2,
              markersize=5)
-    plt.plot(torch.arange(len(fpn_valid_acc)), torch.tensor(fpn_valid_acc).cpu(), 'r-.', linewidth=2,
+    plt.plot(torch.arange(len(fpn_valid_acc)), torch.tensor(fpn_valid_acc).cpu(), 'r:', linewidth=2,
              markersize=5)
-    plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_train_acc).cpu(), 'b:', linewidth=2,
+    plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_train_acc).cpu(), 'b', linewidth=2,
              markersize=5)
-    plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_valid_acc).cpu(), 'r:', linewidth=2,
+    plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_valid_acc).cpu(), 'b:', linewidth=2,
              markersize=5)
     plt.legend(['svm train', 'svm test', 'fpn train', 'fpn test', 'mlp train', 'mlp test'])
     # plt.legend(['fnn train', 'fnn test', 'fpn train', 'fpn test'])

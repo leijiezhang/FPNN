@@ -1,8 +1,8 @@
-model: 'fpn' #
+model: 'fpn_mlp' #
 
 device: 'cuda:0' # 'cpu' 'cuda:0'
-n_batch: 3000
-n_epoch: 200
+n_batch: 300
+n_epoch: 500
 n_kfolds: 5
 
 n_rules: 50
