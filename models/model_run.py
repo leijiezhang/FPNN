@@ -654,7 +654,7 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
     paras = dict()
     paras['kernel'] = 'rbf'
     svm_train_acc, svm_test_acc = svc(train_data.fea.cpu(), test_data.fea.cpu(), train_data.gnd.cpu(),
-    test_data.gnd.cpu(), LikelyLoss(), paras)
+                                      test_data.gnd.cpu(), LikelyLoss(), paras)
     param_config.log.info(f"Accuracy of training data using SVM: {svm_train_acc}")
     param_config.log.info(f"Accuracy of test data using SVM: {svm_test_acc}")
 
@@ -695,8 +695,8 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
                       f"rule_{param_config.n_rules}_lr_{param_config.lr:.6f}_" \
                       f"k_{current_k}.pkl"
     # load the exist model
-    if os.path.exists(model_save_file):
-        fpn_model.load_state_dict(torch.load(model_save_file))
+    # if os.path.exists(model_save_file):
+    #     fpn_model.load_state_dict(torch.load(model_save_file))
     best_test_rslt = 0
     for epoch in range(epochs):
         fpn_model.train()
