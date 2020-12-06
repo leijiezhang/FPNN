@@ -725,7 +725,7 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
                 gnd_train = torch.cat((gnd_train, labels), 0)
             _, predicted_train = torch.max(outputs_train, 1)
             correct_train_num = (predicted_train == gnd_train.squeeze()).squeeze().sum()
-            acc_train = correct_train_num/gnd_train.shape[0]
+            acc_train = correct_train_num.float()/gnd_train.shape[0]
             fpn_train_acc.append(acc_train)
             for i, (data, labels) in enumerate(valid_loader):
                 # data = data.cuda()
@@ -735,7 +735,7 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
                 gnd_val = torch.cat((gnd_val, labels), 0)
             _, predicted_val = torch.max(outputs_val, 1)
             correct_val_num = (predicted_val == gnd_val.squeeze()).squeeze().sum()
-            acc_val = correct_val_num/gnd_val.shape[0]
+            acc_val = correct_val_num.float()/gnd_val.shape[0]
             fpn_valid_acc.append(acc_val)
         param_config.log.info(f"{fpn_model.fire_strength[0:5, :]}")
         if best_test_rslt < acc_train:
@@ -780,7 +780,7 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
                 gnd_train = torch.cat((gnd_train, labels), 0)
             _, predicted_train = torch.max(outputs_train, 1)
             correct_train_num = (predicted_train == gnd_train.squeeze()).squeeze().sum()
-            acc_train = correct_train_num / gnd_train.shape[0]
+            acc_train = correct_train_num.float() / gnd_train.shape[0]
             mlp_train_acc.append(acc_train)
             for i, (data, labels) in enumerate(valid_loader):
                 # data = data.cuda()
@@ -790,7 +790,7 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
                 gnd_val = torch.cat((gnd_val, labels), 0)
             _, predicted_val = torch.max(outputs_val, 1)
             correct_val_num = (predicted_val == gnd_val.squeeze()).squeeze().sum()
-            acc_val = correct_val_num / gnd_val.shape[0]
+            acc_val = correct_val_num.float() / gnd_val.shape[0]
             mlp_valid_acc.append(acc_val)
 
         param_config.log.info(
