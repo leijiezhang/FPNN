@@ -679,7 +679,7 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
     # fpn_model.proto_reform_w.data = torch.eye(train_data.fea.shape[1])
     # model.proto_reform_layer.bias.data = torch.zeros(train_data.fea.shape[1])
 
-    optimizer = torch.optim.Adam(fpn_model.parameters(), lr=param_config.lr)
+    optimizer = torch.optim.Adam(fpn_model.parameters(), lr=param_config.lr, weight_decay=0.003)
     # loss_fn = nn.MSELoss()
     loss_fn = nn.CrossEntropyLoss()
     epochs = param_config.n_epoch
@@ -737,7 +737,7 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
             correct_val_num = (predicted_val == gnd_val.squeeze()).squeeze().sum()
             acc_val = correct_val_num/gnd_val.shape[0]
             fpn_valid_acc.append(acc_val)
-        param_config.log.info(f"{fpn_model.fire_strength[0:5, :]}")
+        # param_config.log.info(f"{fpn_model.fire_strength[0:5, :]}")
         if best_test_rslt < acc_train:
             best_test_rslt = acc_train
             torch.save(fpn_model.state_dict(), model_save_file)
