@@ -807,14 +807,14 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
     plt.plot(torch.arange(len(fpn_valid_acc)), svm_train_acc.cpu().expand_as(torch.tensor(fpn_valid_acc)),
              'k-', linewidth=2, markersize=5)
     plt.plot(torch.arange(len(fpn_valid_acc)), svm_test_acc.cpu().expand_as(torch.tensor(fpn_valid_acc)),
-             'k--', linewidth=2, markersize=5)
+             'k:', linewidth=2, markersize=5)
     plt.plot(torch.arange(len(fpn_valid_acc)), torch.tensor(fpn_train_acc).cpu(), 'r-', linewidth=2,
              markersize=5)
-    plt.plot(torch.arange(len(fpn_valid_acc)), torch.tensor(fpn_valid_acc).cpu(), 'r--', linewidth=2,
+    plt.plot(torch.arange(len(fpn_valid_acc)), torch.tensor(fpn_valid_acc).cpu(), 'r:', linewidth=2,
              markersize=5)
     plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_train_acc).cpu(), 'b-', linewidth=2,
              markersize=5)
-    plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_valid_acc).cpu(), 'b--', linewidth=2,
+    plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_valid_acc).cpu(), 'b:', linewidth=2,
              markersize=5)
     plt.legend(['svm train', 'svm test', 'fpn train', 'fpn test', 'mlp train', 'mlp test'])
     # plt.legend(['fnn train', 'fnn test', 'fpn train', 'fpn test'])
