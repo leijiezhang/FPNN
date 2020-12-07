@@ -41,7 +41,7 @@ for i in torch.arange(len(param_config.dataset_list)):
         param_config.log.war(f"=====k_fold: {kfold_idx + 1}=======")
         train_data, test_data = dataset.get_kfold_data(kfold_idx)
 
-        n_smpl_cls = 30
+        n_smpl_cls = 10
         n_cls = torch.unique(train_data.gnd).shape[0]
         x_tmp = torch.empty(0, train_data.n_fea).to(param_config.device)
         y_tmp = torch.empty(0, 1).to(param_config.device)
