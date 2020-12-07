@@ -41,17 +41,17 @@ for i in torch.arange(len(param_config.dataset_list)):
         param_config.log.war(f"=====k_fold: {kfold_idx + 1}=======")
         train_data, test_data = dataset.get_kfold_data(kfold_idx)
 
-        # n_smpl_cls = 2
-        # n_cls = torch.unique(train_data.gnd).shape[0]
-        # x_tmp = torch.empty(0, train_data.n_fea).to(param_config.device)
-        # y_tmp = torch.empty(0, 1).to(param_config.device)
-        # for gnd_idx in torch.arange(n_cls):
-        #     idx_tmp, _ = torch.where(train_data.gnd.cpu() == gnd_idx)
-        #     x_tmp = torch.cat([x_tmp, train_data.fea[idx_tmp[0:n_smpl_cls], :]], 0)
-        #     y_tmp = torch.cat([y_tmp, train_data.gnd[idx_tmp[0:n_smpl_cls], :]], 0)
-        # train_data.fea = x_tmp
-        # train_data.gnd = y_tmp
-        # train_data.n_smpl = train_data.fea.shape[0]
+        n_smpl_cls = 10
+        n_cls = torch.unique(train_data.gnd).shape[0]
+        x_tmp = torch.empty(0, train_data.n_fea).to(param_config.device)
+        y_tmp = torch.empty(0, 1).to(param_config.device)
+        for gnd_idx in torch.arange(n_cls):
+            idx_tmp, _ = torch.where(train_data.gnd.cpu() == gnd_idx)
+            x_tmp = torch.cat([x_tmp, train_data.fea[idx_tmp[0:n_smpl_cls], :]], 0)
+            y_tmp = torch.cat([y_tmp, train_data.gnd[idx_tmp[0:n_smpl_cls], :]], 0)
+        train_data.fea = x_tmp
+        train_data.gnd = y_tmp
+        train_data.n_smpl = train_data.fea.shape[0]
 
         fpn_train_loss, fpn_test_loss, mlp_train_loss, mlp_test_loss, fnn_train_loss, fnn_test_loss = \
             fpn_run_cls_mlp(param_config, train_data, test_data, kfold_idx + 1)
