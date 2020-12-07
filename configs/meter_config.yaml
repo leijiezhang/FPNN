@@ -5,12 +5,12 @@ n_batch: 30
 n_epoch: 200
 n_kfolds: 5
 
-n_rules: 5
+n_rules: 20
 lr: 0.0005
 
 dataset_folder: 'flowmeter' # each kind of dataset has a same prefix name, dataset is the prefix
 dataset_list:
-  ['MeterA']
+  ['MeterB']
 
 #logger
 log_to_file: 'true' # 'false' 'true'
