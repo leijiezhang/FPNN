@@ -679,7 +679,7 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
     # fpn_model.proto_reform_w.data = torch.eye(train_data.fea.shape[1])
     # model.proto_reform_layer.bias.data = torch.zeros(train_data.fea.shape[1])
 
-    optimizer = torch.optim.Adam(fpn_model.parameters(), lr=param_config.lr)
+    optimizer = torch.optim.Adam(fpn_model.parameters(), lr=param_config.lr, weight_decay=0.003)
     # loss_fn = nn.MSELoss()
     loss_fn = nn.CrossEntropyLoss()
     epochs = param_config.n_epoch
@@ -807,14 +807,14 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
     plt.plot(torch.arange(len(fpn_valid_acc)), svm_train_acc.cpu().expand_as(torch.tensor(fpn_valid_acc)),
              'k-', linewidth=2, markersize=5)
     plt.plot(torch.arange(len(fpn_valid_acc)), svm_test_acc.cpu().expand_as(torch.tensor(fpn_valid_acc)),
-             'k--', linewidth=2, markersize=5)
+             'k:', linewidth=2, markersize=5)
     plt.plot(torch.arange(len(fpn_valid_acc)), torch.tensor(fpn_train_acc).cpu(), 'r-', linewidth=2,
              markersize=5)
-    plt.plot(torch.arange(len(fpn_valid_acc)), torch.tensor(fpn_valid_acc).cpu(), 'r--', linewidth=2,
+    plt.plot(torch.arange(len(fpn_valid_acc)), torch.tensor(fpn_valid_acc).cpu(), 'r:', linewidth=2,
              markersize=5)
     plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_train_acc).cpu(), 'b-', linewidth=2,
              markersize=5)
-    plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_valid_acc).cpu(), 'b--', linewidth=2,
+    plt.plot(torch.arange(len(mlp_valid_acc)), torch.tensor(mlp_valid_acc).cpu(), 'b:', linewidth=2,
              markersize=5)
     plt.legend(['svm train', 'svm test', 'fpn train', 'fpn test', 'mlp train', 'mlp test'])
     # plt.legend(['fnn train', 'fnn test', 'fpn train', 'fpn test'])
