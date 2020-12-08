@@ -1,6 +1,6 @@
 from utils.param_config import ParamConfig
 from utils.loss_utils import RMSELoss, LikelyLoss
-from models.model_run import fpn_run_cls_mlp, fpn_run_reg, fpn_run_cls_cov
+from models.model_run import fpn_run_cls_mlp, fpn_run_reg, fpn_run_cls_cov, fpn_run_cls_mlp_1
 import torch
 import os
 import scipy.io as io
@@ -41,24 +41,45 @@ for i in torch.arange(len(param_config.dataset_list)):
         param_config.log.war(f"=====k_fold: {kfold_idx + 1}=======")
         train_data, test_data = dataset.get_kfold_data(kfold_idx)
 
-        n_smpl_cls = 10
-        n_cls = torch.unique(train_data.gnd).shape[0]
-        x_tmp = torch.empty(0, train_data.n_fea).to(param_config.device)
-        y_tmp = torch.empty(0, 1).to(param_config.device)
-        for gnd_idx in torch.arange(n_cls):
-            idx_tmp, _ = torch.where(train_data.gnd.cpu() == gnd_idx)
-            x_tmp = torch.cat([x_tmp, train_data.fea[idx_tmp[0:n_smpl_cls], :]], 0)
-            y_tmp = torch.cat([y_tmp, train_data.gnd[idx_tmp[0:n_smpl_cls], :]], 0)
-        train_data.fea = x_tmp
-        train_data.gnd = y_tmp
-        train_data.n_smpl = train_data.fea.shape[0]
-        # shuffle all samples
-        rand_idx = torch.randperm(train_data.n_smpl)
-        train_data.fea = train_data.fea[rand_idx, :]
-        train_data.gnd = train_data.gnd[rand_idx, :]
+        # # choose training samples
+        # n_smpl_cls = 10
+        # n_cls = torch.unique(train_data.gnd).shape[0]
+        # x_tmp = torch.empty(0, train_data.n_fea).to(param_config.device)
+        # y_tmp = torch.empty(0, 1).to(param_config.device)
+        # for gnd_idx in torch.arange(n_cls):
+        #     idx_tmp, _ = torch.where(train_data.gnd.cpu() == gnd_idx)
+        #     x_tmp = torch.cat([x_tmp, train_data.fea[idx_tmp[0:n_smpl_cls], :]], 0)
+        #     y_tmp = torch.cat([y_tmp, train_data.gnd[idx_tmp[0:n_smpl_cls], :]], 0)
+        # train_data.fea = x_tmp
+        # train_data.gnd = y_tmp
+        # train_data.n_smpl = train_data.fea.shape[0]
+        # # shuffle all samples
+        # rand_idx = torch.randperm(train_data.n_smpl)
+        # train_data.fea = train_data.fea[rand_idx, :]
+        # train_data.gnd = train_data.gnd[rand_idx, :]
+
+        # # add random guassian noise
+        # noise = torch.empty(0, train_data.n_fea).to(param_config.device)
+        # for instance_idx in torch.arange(train_data.n_smpl):
+        #     noise_tmp = 0.1*torch.normal(fpn_run_cls_mlp_1, 0.1 * train_data.fea.std(0)).unsqueeze(0).to(
+        #         param_config.device)
+        #     # noise = torch.normal(train_data.fea[instance_idx, :], torch.tensor(0.1)).unsqueeze(0).to(
+        #     #     param_config.device)
+        #     noise = torch.cat([noise, noise_tmp], 0)
+        #     # train_data.fea[instance_idx, :] = noise
+        # noise_activate = torch.zeros(train_data.n_smpl * train_data.n_fea, 1)
+        # noise_level = 0.3
+        # noise_n = int(train_data.n_fea*train_data.n_smpl*noise_level)
+        # noise_activate[0:noise_n, :] = torch.ones(noise_n, 1)
+        # # shuffle the mask
+        # noise_activate = noise_activate[torch.randperm(train_data.n_smpl*train_data.n_fea), :]
+        # noise_activate = noise_activate.view(train_data.n_smpl, train_data.n_fea)
+        # noise_mask_0, noise_mask_1 = torch.where(noise_activate == 0)
+        # noise[noise_mask_0, noise_mask_1] = 0
+        # train_data.fea = train_data.fea + noise
 
         fpn_train_loss, fpn_test_loss, mlp_train_loss, mlp_test_loss, fnn_train_loss, fnn_test_loss = \
-            fpn_run_cls_mlp(param_config, train_data, test_data, kfold_idx + 1)
+            fpn_run_cls_mlp_1(param_config, train_data, test_data, kfold_idx + 1)
 
         fpn_test_loss_tsr = torch.cat([fpn_test_loss_tsr, torch.tensor(fpn_test_loss).unsqueeze(1)], 1)
         fpn_train_loss_tsr = torch.cat([fpn_train_loss_tsr, torch.tensor(fpn_train_loss).unsqueeze(1)], 1)

@@ -3,6 +3,94 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
+class FpnMlpFsCls_1(torch.nn.Module):
+    """
+    This is the FPN based on BP, I reform the FPN net referring to the graph attention network.
+    The fire strength is generated from a 3 layer mlp net structure
+    """
+
+    def __init__(self, prototypes: torch.Tensor, variance: torch.Tensor, n_cls, device):
+        """
+
+        :param prototypes:
+        :param n_fea:
+        :param device:
+        """
+        super(FpnMlpFsCls_1, self).__init__()
+        self.n_rules = prototypes.shape[0]
+        self.n_fea = prototypes.shape[1]
+        self.n_cls = n_cls
+
+        # parameters in network
+        # self.proto = torch.autograd.Variable(prototypes, requires_grad=False)
+        self.proto = nn.Parameter(prototypes, requires_grad=True).to(device)
+        self.var = nn.Parameter(variance, requires_grad=True).to(device)
+
+        # self.proto_reform = torch.autograd.Variable(prototypes, requires_grad=True)
+        # self.data_reform = torch.autograd.Variable(prototypes, requires_grad=True)
+        self.fire_strength_ini = torch.autograd.Variable(torch.empty(self.n_rules, self.n_fea), requires_grad=True).to(device)
+        self.fire_strength = torch.autograd.Variable(torch.empty(self.n_rules, self.n_fea), requires_grad=True).to(device)
+        # if torch.cuda.is_available():
+        #     self.proto = self.proto.cuda()
+        #     self.proto_reform = self.proto_reform.cuda()
+        self.fs_layers = torch.nn.Sequential(
+            torch.nn.Linear(self.n_fea, 2 * self.n_fea),
+            torch.nn.ReLU(),
+            torch.nn.Linear(2 * self.n_fea, self.n_fea),
+            torch.nn.ReLU(),
+            torch.nn.Linear(self.n_fea, 1),
+            # torch.nn.Tanh()
+        ).to(device)
+        self.w_layer = nn.Linear(self.n_fea, self.n_fea).to(device)
+
+        # parameters in consequent layer
+
+        # self.fire_strength_active = nn.LeakyReLU(0.005)
+        self.relu_active = nn.ReLU().to(device)
+        self.leak_relu_active = nn.functional.leaky_relu
+        self.batch_norm = torch.nn.BatchNorm1d(self.n_rules).to(device)
+        # parameters in consequent layer
+        self.consq_layers = [nn.Linear(self.n_fea, self.n_cls).to(device) for _ in range(self.n_rules)]
+        for i, consq_layers_item in enumerate(self.consq_layers):
+            self.add_module('para_consq_{}'.format(i), consq_layers_item)
+
+    def forward(self, data: torch.Tensor, is_train):
+        n_batch = data.shape[0]
+        # activate prototypes
+        # self.proto_reform = torch.tanh(self.w_layer(self.proto))
+        # self.data_reform = torch.tanh(self.w_layer(data))
+
+        # data_expands = self.data_reform.repeat_interleave(self.n_rules, dim=0)
+        # proto_expands = self.proto_reform.repeat(n_batch, 1)
+
+        # data_expands = self.data_reform.repeat(self.n_rules, 1)
+        # proto_expands = self.proto_reform.repeat_interleave(n_batch, dim=0)
+        data_expands = data.repeat(self.n_rules, 1)
+        proto_expands = self.proto.repeat_interleave(n_batch, dim=0)
+        var_expands = self.var.repeat_interleave(n_batch, dim=0)
+        fuzzy_set = torch.exp(
+            -(data_expands - proto_expands) ** 2 / (2 * var_expands ** 2))
+        data_diff = fuzzy_set.view(self.n_rules, n_batch, self.n_fea)
+        self.fire_strength_ini = torch.cat([self.fs_layers(data_diff_item) for data_diff_item in data_diff], dim=1)
+        # self.fire_strength_ini = torch.tanh(self.fire_strength_ini)
+        # self.fire_strength_ini = nn.functional.dropout(self.fire_strength_ini, 0.6)
+        # self.fire_strength_ini = self.batch_norm(self.fire_strength_ini)
+        self.fire_strength = F.softmax(self.fire_strength_ini, dim=1)
+
+        # self.fire_strength = nn.functional.dropout(self.fire_strength, 0.2, training=is_train)
+        # print(fire_strength)
+
+        # produce consequent layer
+        fire_strength_processed = self.fire_strength.t().unsqueeze(2).repeat(1, 1, self.n_cls)
+        data_processed = torch.cat([consq_layers_item(data) for consq_layers_item in self.consq_layers], dim=0)
+        data_processed = data_processed.view(self.n_rules, n_batch, self.n_cls)
+        # data_processed = nn.functional.dropout(data_processed, 0.2)
+        outputs = torch.mul(fire_strength_processed, data_processed).sum(0)
+        outputs = F.softmax(outputs, dim=1)
+
+        return outputs
+
+
 class FpnMlpFsCls(torch.nn.Module):
     """
     This is the FPN based on BP, I reform the FPN net referring to the graph attention network.
@@ -33,10 +121,10 @@ class FpnMlpFsCls(torch.nn.Module):
         #     self.proto = self.proto.cuda()
         #     self.proto_reform = self.proto_reform.cuda()
         self.fs_layers = torch.nn.Sequential(
-            torch.nn.Linear(self.n_fea, 2 * self.n_fea),
-            torch.nn.ReLU(),
-            torch.nn.Linear(2 * self.n_fea, self.n_fea),
-            torch.nn.ReLU(),
+            # torch.nn.Linear(self.n_fea, 2 * self.n_fea),
+            # torch.nn.ReLU(),
+            # torch.nn.Linear(2 * self.n_fea, self.n_fea),
+            # torch.nn.ReLU(),
             torch.nn.Linear(self.n_fea, 1),
             # torch.nn.Tanh()
         ).to(device)
