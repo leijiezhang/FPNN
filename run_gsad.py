@@ -58,17 +58,29 @@ for i in torch.arange(len(param_config.dataset_list)):
         shuffle_idx = torch.randperm(train_data.n_smpl)
         train_data.fea = train_data.fea[shuffle_idx, :]
         train_data.gnd = train_data.gnd[shuffle_idx, :]
-        noise_level = 0.1
+        noise_level = 0.3
+        element_num = train_data.n_smpl * train_data.n_fea
+        noise_num = int(noise_level * element_num)
+        noise = torch.rand(train_data.n_smpl, train_data.n_fea).to(param_config.device)
+        mask = torch.zeros(element_num, 1)
+        mask[0:noise_num, :] = 1
+        mask = mask[torch.randperm(element_num), :].view(train_data.n_smpl, train_data.n_fea)
+        mask = mask == 1
+        # train_data.fea[mask] = 0.1*noise[mask] + train_data.fea[mask]
+        train_data.fea[mask] = noise[mask] + train_data.fea[mask]
         # noise = torch.empty(0, train_data.n_fea).to(param_config.device)
-        for instance_idx in torch.arange(int(noise_level * train_data.n_smpl)):
-            noise_tmp = torch.normal(torch.zeros(1, train_data.n_fea), 0.1 * torch.ones(1, train_data.n_fea)).to(
-                param_config.device)
-            train_data.fea[instance_idx, :] = train_data.fea[instance_idx, :] + noise_tmp
+        # for instance_idx in torch.arange(int(noise_level*train_data.n_smpl)):
+        #     # noise_tmp = torch.normal(torch.zeros(1, train_data.n_fea), 0.01 * torch.ones(1, train_data.n_fea)).to(
+        #     #     param_config.device)
+        #     noise_tmp = torch.normal(torch.zeros(1, train_data.n_fea).to(
+        #         param_config.device), train_data.fea.std(0))
+        #     noise = torch.cat([noise, noise_tmp], 0)
+        #     train_data.fea[instance_idx, :] = train_data.fea[instance_idx, :] + noise_tmp
 
-        # shuffle the samples
-        shuffle_idx = torch.randperm(train_data.n_smpl)
-        train_data.fea = train_data.fea[shuffle_idx, :]
-        train_data.gnd = train_data.gnd[shuffle_idx, :]
+        # # shuffle the samples
+        # shuffle_idx = torch.randperm(train_data.n_smpl)
+        # train_data.fea = train_data.fea[shuffle_idx, :]
+        # train_data.gnd = train_data.gnd[shuffle_idx, :]
 
         fpn_train_loss, fpn_test_loss, mlp_train_loss, mlp_test_loss, fnn_train_loss, fnn_test_loss = \
             fpn_run_cls_mlp_1(param_config, train_data, test_data, kfold_idx + 1)
