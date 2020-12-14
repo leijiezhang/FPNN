@@ -1,6 +1,6 @@
 from utils.param_config import ParamConfig
 from utils.loss_utils import RMSELoss, LikelyLoss
-from models.model_run import fpn_run_cls_mlp, fpn_run_reg, fpn_run_cls_cov
+from models.model_run import fpn_run_cls_mlp, fpn_run_reg, fpn_run_cls_cov, fpn_run_cls_mlp_1
 import torch
 import os
 import scipy.io as io
@@ -58,14 +58,22 @@ for i in torch.arange(len(param_config.dataset_list)):
         shuffle_idx = torch.randperm(train_data.n_smpl)
         train_data.fea = train_data.fea[shuffle_idx, :]
         train_data.gnd = train_data.gnd[shuffle_idx, :]
-        noise_level = 0.3
+        noise_level = 0.5
         element_num = train_data.n_smpl * train_data.n_fea
+
+        noise = torch.randn(train_data.n_smpl, train_data.n_fea).to(param_config.device)
+        # element wise
         noise_num = int(noise_level * element_num)
-        noise = torch.rand(train_data.n_smpl, train_data.n_fea).to(param_config.device)
         mask = torch.zeros(element_num, 1)
         mask[0:noise_num, :] = 1
         mask = mask[torch.randperm(element_num), :].view(train_data.n_smpl, train_data.n_fea)
         mask = mask == 1
+        # # sample wise
+        # noise_num = int(noise_level * train_data.n_smpl)
+        # mask = torch.zeros(train_data.n_smpl, train_data.n_fea)
+        # mask[0:noise_num, :] = 1
+        # mask = mask[torch.randperm(train_data.n_smpl), :]
+        # mask = mask == 1
         # train_data.fea[mask] = 0.1*noise[mask] + train_data.fea[mask]
         train_data.fea[mask] = noise[mask] + train_data.fea[mask]
         # noise = torch.empty(0, train_data.n_fea).to(param_config.device)
@@ -83,7 +91,7 @@ for i in torch.arange(len(param_config.dataset_list)):
         # train_data.gnd = train_data.gnd[shuffle_idx, :]
 
         fpn_train_loss, fpn_test_loss, mlp_train_loss, mlp_test_loss, fnn_train_loss, fnn_test_loss = \
-            fpn_run_cls_mlp(param_config, train_data, test_data, kfold_idx + 1)
+            fpn_run_cls_mlp_1(param_config, train_data, test_data, kfold_idx + 1)
 
         fpn_test_loss_tsr = torch.cat([fpn_test_loss_tsr, torch.tensor(fpn_test_loss).unsqueeze(1)], 1)
         fpn_train_loss_tsr = torch.cat([fpn_train_loss_tsr, torch.tensor(fpn_train_loss).unsqueeze(1)], 1)

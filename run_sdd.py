@@ -63,7 +63,7 @@ for i in torch.arange(len(param_config.dataset_list)):
         shuffle_idx = torch.randperm(train_data.n_smpl)
         train_data.fea = train_data.fea[shuffle_idx, :]
         train_data.gnd = train_data.gnd[shuffle_idx, :]
-        noise_level = 0.3
+        noise_level = 0.5
         element_num = train_data.n_smpl*train_data.n_fea
         noise_num = int(noise_level*element_num)
         noise = torch.rand(train_data.n_smpl, train_data.n_fea).to(param_config.device)
