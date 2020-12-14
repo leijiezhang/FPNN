@@ -1,6 +1,6 @@
 from utils.param_config import ParamConfig
 from utils.loss_utils import RMSELoss, LikelyLoss
-from models.model_run import fpn_run_cls_mlp, fpn_run_reg, fpn_run_cls_cov
+from models.model_run import fpn_run_cls_mlp, fpn_run_reg, fpn_run_cls_cov, fpn_run_cls_mlp_1
 import torch
 import os
 import scipy.io as io
@@ -42,10 +42,10 @@ for i in torch.arange(len(param_config.dataset_list)):
         train_data, test_data = dataset.get_kfold_data(kfold_idx)
 
         fpn_train_loss, fpn_test_loss, mlp_train_loss, mlp_test_loss, fnn_train_loss, fnn_test_loss = \
-            fpn_run_cls_mlp(param_config, train_data, test_data, kfold_idx + 1)
+            fpn_run_cls_mlp_1(param_config, train_data, test_data, kfold_idx + 1)
 
         fpn_test_loss_tsr = torch.cat([fpn_test_loss_tsr, torch.tensor(fpn_test_loss).unsqueeze(1)], 1)
-        fpn_train_loss_tsr = torch.cat([fpn_train_loss_tsr, torch.tensor(fpn_train_loss).unsqueeze(1)], 1)
+        fpn_train_loss_tsr = torch.ctrain_dataat([fpn_train_loss_tsr, torch.tensor(fpn_train_loss).unsqueeze(1)], 1)
         mlp_test_loss_tsr = torch.cat([mlp_test_loss_tsr, torch.tensor(mlp_test_loss).unsqueeze(1)], 1)
         mlp_train_loss_tsr = torch.cat([mlp_train_loss_tsr, torch.tensor(mlp_train_loss).unsqueeze(1)], 1)
         fnn_test_loss_tsr = torch.cat([fnn_test_loss_tsr, torch.tensor(fnn_test_loss).unsqueeze(1)], 1)

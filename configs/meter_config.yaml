@@ -10,7 +10,7 @@ lr: 0.0005
 
 dataset_folder: 'flowmeter' # each kind of dataset has a same prefix name, dataset is the prefix
 dataset_list:
-  ['MeterB']
+  ['MeterD']
 
 #logger
 log_to_file: 'true' # 'false' 'true'

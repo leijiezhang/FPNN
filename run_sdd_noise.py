@@ -53,7 +53,6 @@ for i in torch.arange(len(param_config.dataset_list)):
         # train_data.gnd = y_tmp
         # train_data.n_smpl = train_data.fea.shape[0]
 
-
         fpn_train_loss, fpn_test_loss, mlp_train_loss, mlp_test_loss, fnn_train_loss, fnn_test_loss = \
             fpn_run_cls_mlp(param_config, train_data, test_data, kfold_idx + 1)
 

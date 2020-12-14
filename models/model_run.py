@@ -874,6 +874,7 @@ def fpn_run_cls_mlp_1(param_config: ParamConfig, train_data: Dataset, test_data:
             cluster_samples.shape[0]).float())
         # std_tmp = torch.std(cluster_samples, 0).unsqueeze(0)
         std = torch.cat((std, std_tmp.unsqueeze(0)), 0)
+    std = torch.where(std < 10**-5, 10**-5 * torch.ones(param_config.n_rules, train_data.fea.shape[1]).to(param_config.device), std)
     # prototype_list = torch.ones(param_config.n_rules, train_data.n_fea)
     # prototype_list = train_data.fea[torch.randperm(train_data.n_smpl)[0:param_config.n_rules], :]
     n_cls = train_data.gnd.unique().shape[0]
@@ -941,10 +942,10 @@ def fpn_run_cls_mlp_1(param_config: ParamConfig, train_data: Dataset, test_data:
             correct_val_num = (predicted_val == gnd_val.squeeze()).squeeze().sum()
             acc_val = correct_val_num/gnd_val.shape[0]
             fpn_valid_acc.append(acc_val)
-        # param_config.log.info(f"{fpn_model.fire_strength[0:5, :]}")
-        if best_test_rslt < acc_train:
-            best_test_rslt = acc_train
-            torch.save(fpn_model.state_dict(), model_save_file)
+        # # param_config.log.info(f"{fpn_model.fire_strength[0:5, :]}")
+        # if best_test_rslt < acc_train:
+        #     best_test_rslt = acc_train
+        #     torch.save(fpn_model.state_dict(), model_save_file)
         param_config.log.info(
             f"fpn epoch : {epoch + 1}, train acc : {fpn_train_acc[-1]}, test acc : {fpn_valid_acc[-1]}")
 
