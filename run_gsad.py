@@ -60,11 +60,19 @@ for i in torch.arange(len(param_config.dataset_list)):
         train_data.gnd = train_data.gnd[shuffle_idx, :]
         noise_level = 0.3
         element_num = train_data.n_smpl * train_data.n_fea
-        noise_num = int(noise_level * element_num)
-        noise = torch.rand(train_data.n_smpl, train_data.n_fea).to(param_config.device)
-        mask = torch.zeros(element_num, 1)
+
+        noise = torch.randn(train_data.n_smpl, train_data.n_fea).to(param_config.device)
+        # # element wise
+        # noise_num = int(noise_level * element_num)
+        # mask = torch.zeros(element_num, 1)
+        # mask[0:noise_num, :] = 1
+        # mask = mask[torch.randperm(element_num), :].view(train_data.n_smpl, train_data.n_fea)
+        # mask = mask == 1
+        # sample wise
+        noise_num = int(noise_level * train_data.n_smpl)
+        mask = torch.zeros(train_data.n_smpl, train_data.n_fea)
         mask[0:noise_num, :] = 1
-        mask = mask[torch.randperm(element_num), :].view(train_data.n_smpl, train_data.n_fea)
+        mask = mask[torch.randperm(train_data.n_smpl), :]
         mask = mask == 1
         # train_data.fea[mask] = 0.1*noise[mask] + train_data.fea[mask]
         train_data.fea[mask] = noise[mask] + train_data.fea[mask]

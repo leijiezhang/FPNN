@@ -942,7 +942,7 @@ def fpn_run_cls_mlp_1(param_config: ParamConfig, train_data: Dataset, test_data:
             correct_val_num = (predicted_val == gnd_val.squeeze()).squeeze().sum()
             acc_val = correct_val_num/gnd_val.shape[0]
             fpn_valid_acc.append(acc_val)
-        # # param_config.log.info(f"{fpn_model.fire_strength[0:5, :]}")
+        # param_config.log.info(f"{fpn_model.fire_strength[0:5, :]}")
         # if best_test_rslt < acc_train:
         #     best_test_rslt = acc_train
         #     torch.save(fpn_model.state_dict(), model_save_file)
