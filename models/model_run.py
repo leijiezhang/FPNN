@@ -1025,6 +1025,8 @@ def fpn_run_cls_mlp_1(param_config: ParamConfig, train_data: Dataset, test_data:
     # plt.legend(['fnn train', 'fnn test', 'fpn train', 'fpn test'])
     # plt.legend(['mlp train', 'mlp test', 'fpn train', 'fpn test'])
     # plt.legend(['fpn train', 'fpn test'])
+    plt.savefig(f"{data_save_dir}/acc_fpn_{param_config.dataset_folder}_rule_{param_config.n_rules}_lr_{lr:.4f}"
+                f"_k_{current_k}.pdf")
     plt.show()
 
     # save all the results

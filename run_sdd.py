@@ -41,7 +41,6 @@ for i in torch.arange(len(param_config.dataset_list)):
         param_config.log.war(f"=====k_fold: {kfold_idx + 1}=======")
         train_data, test_data = dataset.get_kfold_data(kfold_idx+2)
 
-        # # choose training samples
         # n_smpl_cls = 10
         # n_cls = torch.unique(train_data.gnd).shape[0]
         # x_tmp = torch.empty(0, train_data.n_fea).to(param_config.device)
@@ -53,39 +52,47 @@ for i in torch.arange(len(param_config.dataset_list)):
         # train_data.fea = x_tmp
         # train_data.gnd = y_tmp
         # train_data.n_smpl = train_data.fea.shape[0]
-        # # shuffle all samples
-        # rand_idx = torch.randperm(train_data.n_smpl)
-        # train_data.fea = train_data.fea[rand_idx, :]
-        # train_data.gnd = train_data.gnd[rand_idx, :]
 
         # add random guassian noise
-        # shuffle the samples
-        shuffle_idx = torch.randperm(train_data.n_smpl)
-        train_data.fea = train_data.fea[shuffle_idx, :]
-        train_data.gnd = train_data.gnd[shuffle_idx, :]
-        noise_level = 0.3
-        element_num = train_data.n_smpl*train_data.n_fea
-        noise_num = int(noise_level*element_num)
-        noise = torch.rand(train_data.n_smpl, train_data.n_fea).to(param_config.device)
-        mask = torch.zeros(element_num, 1)
-        mask[0:noise_num, :] = 1
-        mask = mask[torch.randperm(element_num), :].view(train_data.n_smpl, train_data.n_fea)
-        mask = mask==1
-        # train_data.fea[mask] = 0.1*noise[mask] + train_data.fea[mask]
-        train_data.fea[mask] = noise[mask] + train_data.fea[mask]
-        # noise = torch.empty(0, train_data.n_fea).to(param_config.device)
-        # for instance_idx in torch.arange(int(noise_level*train_data.n_smpl)):
-        #     # noise_tmp = torch.normal(torch.zeros(1, train_data.n_fea), 0.01 * torch.ones(1, train_data.n_fea)).to(
-        #     #     param_config.device)
-        #     noise_tmp = torch.normal(torch.zeros(1, train_data.n_fea).to(
-        #         param_config.device), train_data.fea.std(0))
-        #     noise = torch.cat([noise, noise_tmp], 0)
-        #     train_data.fea[instance_idx, :] = train_data.fea[instance_idx, :] + noise_tmp
-
         # # shuffle the samples
         # shuffle_idx = torch.randperm(train_data.n_smpl)
         # train_data.fea = train_data.fea[shuffle_idx, :]
         # train_data.gnd = train_data.gnd[shuffle_idx, :]
+        noise_level = 0.0
+        if noise_level > 0.0:
+            element_num = train_data.n_smpl * train_data.n_fea
+
+            noise_mean = torch.zeros(train_data.n_smpl, train_data.n_fea)
+            noise_std = 0.8 * torch.ones(train_data.n_smpl, train_data.n_fea)
+            noise = torch.normal(noise_mean, noise_std).to(param_config.device)
+            # noise = torch.randn(train_data.n_smpl, train_data.n_fea).to(param_config.device)
+            # element wise
+            noise_num = int(noise_level * element_num)
+            mask = torch.zeros(element_num, 1)
+            mask[0:noise_num, :] = 1
+            mask = mask[torch.randperm(element_num), :].view(train_data.n_smpl, train_data.n_fea)
+            mask = mask == 1
+            # # sample wise
+            # noise_num = int(noise_level * train_data.n_smpl)
+            # mask = torch.zeros(train_data.n_smpl, train_data.n_fea)
+            # mask[0:noise_num, :] = 1
+            # mask = mask[torch.randperm(train_data.n_smpl), :]
+            # mask = mask == 1
+            # train_data.fea[mask] = 0.1*noise[mask] + train_data.fea[mask]
+            train_data.fea[mask] = noise[mask] + train_data.fea[mask]
+            # noise = torch.empty(0, train_data.n_fea).to(param_config.device)
+            # for instance_idx in torch.arange(int(noise_level*train_data.n_smpl)):
+            #     # noise_tmp = torch.normal(torch.zeros(1, train_data.n_fea), 0.01 * torch.ones(1, train_data.n_fea)).to(
+            #     #     param_config.device)
+            #     noise_tmp = torch.normal(torch.zeros(1, train_data.n_fea).to(
+            #         param_config.device), train_data.fea.std(0))
+            #     noise = torch.cat([noise, noise_tmp], 0)
+            #     train_data.fea[instance_idx, :] = train_data.fea[instance_idx, :] + noise_tmp
+
+            # # shuffle the samples
+            # shuffle_idx = torch.randperm(train_data.n_smpl)
+            # train_data.fea = train_data.fea[shuffle_idx, :]
+            # train_data.gnd = train_data.gnd[shuffle_idx, :]
 
         fpn_train_loss, fpn_test_loss, mlp_train_loss, mlp_test_loss, fnn_train_loss, fnn_test_loss = \
             fpn_run_cls_mlp_1(param_config, train_data, test_data, kfold_idx + 1)
