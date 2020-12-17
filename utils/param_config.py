@@ -12,6 +12,7 @@ class ParamConfig(object):
         self.model_name = 'fpn'
         self.n_batch = 100
         self.n_epoch = 1000
+        self.noise_level = 0.0
         self.n_kfolds = n_kfolds  # Number of folds
 
         self.n_rules = nrules  # number of rules in stage 1
@@ -38,6 +39,7 @@ class ParamConfig(object):
         self.n_batch = config_content['n_batch']
         self.n_epoch = config_content['n_epoch']
         self.n_kfolds = config_content['n_kfolds']
+        self.noise_level = config_content['noise_level']
 
         self.n_rules = config_content['n_rules']
         self.lr = config_content['lr']
