@@ -4,7 +4,7 @@ device: 'cuda:0' # 'cpu' 'cuda:0'
 n_batch: 30
 n_epoch: 300
 n_kfolds: 5
-noise_level: 0.0
+noise_level: 0.5
 
 n_rules: 5
 lr: 0.0005
