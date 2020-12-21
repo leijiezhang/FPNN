@@ -812,7 +812,7 @@ def fpn_run_reg(param_config: ParamConfig, train_data: Dataset, test_data: Datas
 #     return fpn_train_acc, fpn_valid_acc
 
 
-def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: Dataset, current_k):
+def run_cmp_mthds(param_config: ParamConfig, train_data: Dataset, test_data: Dataset, current_k):
     """
     todo: this is the method for fuzzy Neuron network using back propagation
     :param param_config:
@@ -947,4 +947,45 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
         cnn11_train_acc, cnn12_train_acc, cnn21_train_acc, cnn22_train_acc, \
         cnn11_valid_acc, cnn12_valid_acc, cnn21_valid_acc, cnn22_valid_acc, \
         svm_train_acc, svm_test_acc
+
+
+def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: Dataset, current_k):
+    """
+    todo: this is the method for fuzzy Neuron network using back propagation
+    :param param_config:
+    :param train_data: training dataset
+    :param test_data: test dataset
+    :param current_k: current k
+    :return:
+    """
+    data_save_dir = f"./results/{param_config.dataset_folder}"
+
+    if not os.path.exists(data_save_dir):
+        os.makedirs(data_save_dir)
+
+    train_dataset = DatasetTorch(x=train_data.fea, y=train_data.gnd)
+    valid_dataset = DatasetTorch(x=test_data.fea, y=test_data.gnd)
+
+    train_loader = DataLoader(dataset=train_dataset, batch_size=param_config.n_batch, shuffle=False)
+    valid_loader = DataLoader(dataset=valid_dataset, batch_size=param_config.n_batch, shuffle=False)
+    n_cls = train_data.gnd.unique().shape[0]
+
+    # ============FPN models===========
+    fpn_train_acc, fpn_valid_acc = fpn_cls(param_config, train_data, train_loader, valid_loader)
+
+    plt.figure(0)
+    title = f"FPN Acc of {param_config.dataset_folder}, prototypes:{param_config.n_rules}"
+    plt.title(title)
+    plt.xlabel('Epoch')
+    plt.ylabel('Acc')
+    plt.plot(torch.arange(len(fpn_valid_acc)), fpn_train_acc.cpu(), 'r-', linewidth=2,
+             markersize=5)
+    plt.plot(torch.arange(len(fpn_valid_acc)), fpn_valid_acc.cpu(), 'r--', linewidth=2,
+             markersize=5)
+    plt.legend(['fpn train', 'fpn test'])
+    plt.savefig(f"{data_save_dir}/acc_fpn_{param_config.dataset_folder}_rule_{param_config.n_rules}"
+                f"_nl_{param_config.noise_level}_k_{current_k + 1}.pdf")
+    # plt.show()
+
+    return fpn_train_acc, fpn_valid_acc
 

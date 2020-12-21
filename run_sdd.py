@@ -1,6 +1,6 @@
 from utils.param_config import ParamConfig
 from utils.loss_utils import RMSELoss, LikelyLoss
-from models.model_run import fpn_run_cls_mlp
+from models.model_run import run_cmp_mthds
 import torch
 import os
 import scipy.io as io
@@ -92,7 +92,7 @@ for i in torch.arange(len(param_config.dataset_list)):
             cnn11_train_acc, cnn12_train_acc, cnn21_train_acc, cnn22_train_acc, \
             cnn11_valid_acc, cnn12_valid_acc, cnn21_valid_acc, cnn22_valid_acc, \
             svm_train_acc, svm_test_acc = \
-            fpn_run_cls_mlp(param_config, train_data, test_data, kfold_idx)
+            run_cmp_mthds(param_config, train_data, test_data, kfold_idx)
 
         fpn_test_acc_tsr = torch.cat([fpn_test_acc_tsr, fpn_valid_acc], 1)
         fpn_train_acc_tsr = torch.cat([fpn_train_acc_tsr, fpn_train_acc], 1)
