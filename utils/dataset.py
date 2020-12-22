@@ -101,10 +101,10 @@ class Dataset(object):
             train_data = Dataset(self.fea[train_idx[0], :], self.gnd[train_idx[0], :], self.task, train_name)
             test_data = Dataset(self.fea[test_idx[0], :], self.gnd[test_idx[0], :], self.task, test_name)
 
-        # normalize data
-        fea_all = torch.cat([train_data.fea, test_data.fea], 0)
-        fea_normalize = mapminmax(fea_all)
-        train_data.fea = fea_normalize[:train_data.n_smpl]
-        test_data.fea = fea_normalize[train_data.n_smpl:]
+        # # normalize data
+        # fea_all = torch.cat([train_data.fea, test_data.fea], 0)
+        # fea_normalize = mapminmax(fea_all)
+        # train_data.fea = fea_normalize[:train_data.n_smpl]
+        # test_data.fea = fea_normalize[train_data.n_smpl:]
 
         return train_data, test_data

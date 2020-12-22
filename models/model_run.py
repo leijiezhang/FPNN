@@ -12,7 +12,7 @@ import torch
 from kmeans_pytorch import kmeans
 from keras.utils import to_categorical
 from sklearn.cluster import KMeans
-from loss_utils import NRMSELoss, LikelyLoss, LossFunc
+from loss_utils import NRMSELoss, LikelyLoss, LossFunc, MSELoss
 from fpn_models import FpnMlpFsCls, FpnCov1dFSCls, FpnMlpFsReg, FpnCov1dFSReg, FpnMlpFsCls_1
 
 from dataset import DatasetTorch
@@ -393,6 +393,106 @@ def fpn_cls(param_config: ParamConfig, train_data: Dataset, train_loader: DataLo
 
     param_config.log.info("fpn epoch:=======================finished===========================")
     return fpn_train_acc, fpn_valid_acc
+
+
+def fpn_reg(param_config: ParamConfig, train_data: Dataset, train_loader: DataLoader, valid_loader: DataLoader):
+    """
+        todo: this is the method for fuzzy Neuron network using kmeans
+        :param param_config:
+        :param train_data: training dataset
+        :param train_loader: training dataset
+        :param valid_loader: test dataset
+        :return:
+    """
+    prototype_ids, prototype_list = kmeans(
+        X=train_data.fea, num_clusters=param_config.n_rules, distance='euclidean',
+        device=torch.device(train_data.fea.device)
+    )
+    prototype_list = prototype_list.to(param_config.device)
+    # get the std of data x
+    std = torch.empty((0, train_data.fea.shape[1])).to(train_data.fea.device)
+    for i in range(param_config.n_rules):
+        mask = prototype_ids == i
+        cluster_samples = train_data.fea[mask]
+        std_tmp = torch.sqrt(torch.sum((cluster_samples - prototype_list[i, :]) ** 2, 0) / torch.tensor(
+            cluster_samples.shape[0]).float())
+        # std_tmp = torch.std(cluster_samples, 0).unsqueeze(0)
+        std = torch.cat((std, std_tmp.unsqueeze(0)), 0)
+    std = torch.where(std < 10 ** -5,
+                      10 ** -5 * torch.ones(param_config.n_rules, train_data.fea.shape[1]).to(param_config.device), std)
+    # prototype_list = torch.ones(param_config.n_rules, train_data.n_fea)
+    # prototype_list = train_data.fea[torch.randperm(train_data.n_smpl)[0:param_config.n_rules], :]
+    n_cls = train_data.gnd.unique().shape[0]
+    fpn_model: nn.Module = FpnMlpFsCls_1(prototype_list, std, n_cls, param_config.device)
+    # fpn_model = fpn_model.cuda()
+    # initiate model parameter
+    # fpn_model.proto_reform_w.data = torch.eye(train_data.fea.shape[1])
+    # model.proto_reform_layer.bias.data = torch.zeros(train_data.fea.shape[1])
+
+    optimizer = torch.optim.Adam(fpn_model.parameters(), lr=param_config.lr)
+    # loss_fn = nn.MSELoss()
+    loss_fn = nn.MSELoss()
+    epochs = param_config.n_epoch
+
+    fpn_train_mse = torch.empty(0, 1).to(param_config.device)
+    fpn_valid_mse = torch.empty(0, 1).to(param_config.device)
+
+    data_save_dir = f"./results/{param_config.dataset_folder}"
+
+    if not os.path.exists(data_save_dir):
+        os.makedirs(data_save_dir)
+    # model_save_file = f"{data_save_dir}/bpfnn_{param_config.dataset_folder}_" \
+    #                   f"rule_{param_config.n_rules}_lr_{param_config.lr:.6f}_" \
+    #                   f"k_{current_k}.pkl"
+    # load the exist model
+    # if os.path.exists(model_save_file):
+    #     fpn_model.load_state_dict(torch.load(model_save_file))
+    best_test_rslt = 0
+    for epoch in range(epochs):
+        fpn_model.train()
+
+        for i, (data, labels) in enumerate(train_loader):
+            # data = data.cuda()
+            # labels = labels.cuda()
+            outputs_temp = fpn_model(data, True)
+            loss = loss_fn(outputs_temp, labels.squeeze().long())
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+
+        fpn_model.eval()
+        outputs_train = torch.empty(0, n_cls).to(param_config.device)
+        outputs_val = torch.empty(0, n_cls).to(param_config.device)
+
+        gnd_train = torch.empty(0, 1).to(param_config.device)
+        gnd_val = torch.empty(0, 1).to(param_config.device)
+        with torch.no_grad():
+            for i, (data, labels) in enumerate(train_loader):
+                # data = data.cuda()
+                # labels = labels.cuda()
+                outputs_temp = fpn_model(data, False)
+                outputs_train = torch.cat((outputs_train, outputs_temp), 0)
+                gnd_train = torch.cat((gnd_train, labels), 0)
+            mse_train = MSELoss().forward(outputs_train, gnd_train)
+            fpn_train_mse = torch.cat([fpn_train_mse, mse_train.unsqueeze(0).unsqueeze(1)], 0)
+            for i, (data, labels) in enumerate(valid_loader):
+                # data = data.cuda()
+                # labels = labels.cuda()
+                outputs_temp = fpn_model(data, False)
+                outputs_val = torch.cat((outputs_val, outputs_temp), 0)
+                gnd_val = torch.cat((gnd_val, labels), 0)
+            mse_val = MSELoss().forward(outputs_val, gnd_val)
+            fpn_valid_mse = torch.cat([fpn_valid_mse, mse_val.unsqueeze(0).unsqueeze(1)], 0)
+
+        # param_config.log.info(f"{fpn_model.fire_strength[0:5, :]}")
+        # if best_test_rslt < mse_train:
+        #     best_test_rslt = mse_train
+        #     torch.save(fpn_model.state_dict(), model_save_file)
+        param_config.log.info(
+            f"fpn epoch : {epoch + 1}, train mse : {fpn_train_mse[-1, 0]}, test mse : {fpn_valid_mse[-1, 0]}")
+
+    param_config.log.info("fpn epoch:=======================finished===========================")
+    return fpn_train_mse, fpn_valid_mse
 
 
 def fpn_run_reg(param_config: ParamConfig, train_data: Dataset, test_data: Dataset, current_k):
@@ -989,3 +1089,43 @@ def fpn_run_cls_mlp(param_config: ParamConfig, train_data: Dataset, test_data: D
 
     return fpn_train_acc, fpn_valid_acc
 
+
+def fpn_run_reg_mlp(param_config: ParamConfig, train_data: Dataset, test_data: Dataset, current_k):
+    """
+    todo: this is the method for fuzzy Neuron network using back propagation
+    :param param_config:
+    :param train_data: training dataset
+    :param test_data: test dataset
+    :param current_k: current k
+    :return:
+    """
+    data_save_dir = f"./results/{param_config.dataset_folder}"
+
+    if not os.path.exists(data_save_dir):
+        os.makedirs(data_save_dir)
+
+    train_dataset = DatasetTorch(x=train_data.fea, y=train_data.gnd)
+    valid_dataset = DatasetTorch(x=test_data.fea, y=test_data.gnd)
+
+    train_loader = DataLoader(dataset=train_dataset, batch_size=param_config.n_batch, shuffle=False)
+    valid_loader = DataLoader(dataset=valid_dataset, batch_size=param_config.n_batch, shuffle=False)
+    n_cls = train_data.gnd.unique().shape[0]
+
+    # ============FPN models===========
+    fpn_train_mse, fpn_valid_mse = fpn_reg(param_config, train_data, train_loader, valid_loader)
+
+    plt.figure(0)
+    title = f"FPN mse of {param_config.dataset_folder}, prototypes:{param_config.n_rules}"
+    plt.title(title)
+    plt.xlabel('Epoch')
+    plt.ylabel('mse')
+    plt.plot(torch.arange(len(fpn_valid_mse)), fpn_train_mse.cpu(), 'r-', linewidth=2,
+             markersize=5)
+    plt.plot(torch.arange(len(fpn_valid_mse)), fpn_valid_mse.cpu(), 'r--', linewidth=2,
+             markersize=5)
+    plt.legend(['fpn train', 'fpn test'])
+    plt.savefig(f"{data_save_dir}/mse_fpn_{param_config.dataset_folder}_rule_{param_config.n_rules}"
+                f"_nl_{param_config.noise_level}_k_{current_k + 1}.pdf")
+    # plt.show()
+
+    return fpn_train_mse, fpn_valid_mse

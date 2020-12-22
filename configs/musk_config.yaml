@@ -6,12 +6,12 @@ n_epoch: 200
 n_kfolds: 5
 noise_level: 0.3
 
-n_rules: 10
+n_rules: 50
 lr: 0.001
 
 dataset_folder: 'musk' # each kind of dataset has a same prefix name, dataset is the prefix
 dataset_list:
-  ['musk_clean1']
+  ['musk_clean2']
 
 #logger
 log_to_file: 'true' # 'false' 'true'
