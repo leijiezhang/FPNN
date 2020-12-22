@@ -227,7 +227,7 @@ def fnn_reg(param_config: ParamConfig, train_data: Dataset, test_data: Dataset):
 def dnn_cls(dnn_model: Dnn, param_config: ParamConfig, train_loader: DataLoader, valid_loader: DataLoader, model_name):
     """
         todo: this is the method for fuzzy Neuron network using kmeans
-        :param mlp_model: mlp model
+        :param dnn_model: mlp model
         :param param_config: config information
         :param train_loader: training dataset
         :param valid_loader: test dataset
@@ -239,7 +239,7 @@ def dnn_cls(dnn_model: Dnn, param_config: ParamConfig, train_loader: DataLoader,
     optimizer = torch.optim.Adam(dnn_model.parameters(), lr=param_config.lr)
     loss_fn = nn.CrossEntropyLoss()
     epochs = param_config.n_epoch
-
+    param_config.log.info('# generator parameters:', sum(param.numel() for param in dnn_model.parameters()))
     mlp_train_acc = torch.empty(0, 1).to(param_config.device)
     mlp_valid_acc = torch.empty(0, 1).to(param_config.device)
 
@@ -285,9 +285,9 @@ def dnn_cls(dnn_model: Dnn, param_config: ParamConfig, train_loader: DataLoader,
             mlp_valid_acc = torch.cat([mlp_valid_acc, acc_val.unsqueeze(0).unsqueeze(1)], 0)
 
         param_config.log.info(
-            f"mlp epoch : {epoch + 1}, train acc : {mlp_train_acc[-1, 0]}, test acc : {mlp_valid_acc[-1, 0]}")
+            f"{model_name} epoch : {epoch + 1}, train acc : {mlp_train_acc[-1, 0]}, test acc : {mlp_valid_acc[-1, 0]}")
 
-    param_config.log.info(f"mlp epoch:======================={model_name} finished===========================")
+    param_config.log.info(f":======================={model_name} finished===========================")
     return mlp_train_acc, mlp_valid_acc
 
 
@@ -324,7 +324,8 @@ def fpn_cls(param_config: ParamConfig, train_data: Dataset, train_loader: DataLo
     # initiate model parameter
     # fpn_model.proto_reform_w.data = torch.eye(train_data.fea.shape[1])
     # model.proto_reform_layer.bias.data = torch.zeros(train_data.fea.shape[1])
-
+    param_config.log.info("fpn epoch:=======================start===========================")
+    param_config.log.info('# generator parameters:', sum(param.numel() for param in fpn_model.parameters()))
     optimizer = torch.optim.Adam(fpn_model.parameters(), lr=param_config.lr)
     # loss_fn = nn.MSELoss()
     loss_fn = nn.CrossEntropyLoss()
@@ -428,7 +429,8 @@ def fpn_reg(param_config: ParamConfig, train_data: Dataset, train_loader: DataLo
     # initiate model parameter
     # fpn_model.proto_reform_w.data = torch.eye(train_data.fea.shape[1])
     # model.proto_reform_layer.bias.data = torch.zeros(train_data.fea.shape[1])
-
+    param_config.log.info("fpn epoch:=======================start===========================")
+    param_config.log.info('# generator parameters:', sum(param.numel() for param in fpn_model.parameters()))
     optimizer = torch.optim.Adam(fpn_model.parameters(), lr=param_config.lr)
     # loss_fn = nn.MSELoss()
     loss_fn = nn.MSELoss()
