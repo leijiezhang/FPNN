@@ -19,6 +19,28 @@ class DatasetTorch(Dataset_nn):
         return x, y
 
 
+class DatasetTorchB(Dataset_nn):
+    """
+    for binary labels
+    """
+    def __init__(self, x, y=None):
+        super(DatasetTorchB, self).__init__()
+        self.x: torch.Tensor = x
+        self.y: torch.Tensor = y
+        self.class_num = int(y.max())+1
+
+    def __len__(self):
+        return self.x.shape[0]
+
+    def __getitem__(self, index):
+        x: torch.Tensor = self.x[index, :]
+        y: torch.Tensor = self.y[index, :]
+        batch_size = 1
+        y_one_hot = torch.zeros(batch_size, self.class_num)
+        y_one_hot[0, int(y.cpu())] = 1
+        return x, y_one_hot
+
+
 class Dataset(object):
     """
         we suppose the data structure is X: N x D (N is the number of data samples and D is the data sample dimention)
@@ -104,6 +126,7 @@ class Dataset(object):
         # normalize data
         fea_all = torch.cat([train_data.fea, test_data.fea], 0)
         fea_normalize = mapminmax(fea_all)
+        # fea_normalize = fea_all
         train_data.fea = fea_normalize[:train_data.n_smpl]
         test_data.fea = fea_normalize[train_data.n_smpl:]
 

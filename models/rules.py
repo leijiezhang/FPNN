@@ -2,7 +2,7 @@ from sklearn.cluster import KMeans
 from scipy.spatial.distance import cdist
 import torch
 import abc
-from kmeans_pytorch import kmeans
+# from kmeans_pytorch import kmeans
 
 
 class RuleBase(object):
@@ -68,9 +68,13 @@ class RuleKmeans(RuleBase):
         :param x: the data where rules are generated
         :param n_rules: number of the rules, namely the number of cluster centers
         """
-        cluster_ids_x, cluster_centers = kmeans(
-            X=x, num_clusters=n_rules, distance='euclidean', device=torch.device(x.device)
-        )
+        kmeans = KMeans(n_clusters=n_rules, random_state=0).fit(x.cpu())
+        cluster_ids_x = torch.tensor(kmeans.labels_)
+        cluster_centers = torch.tensor(kmeans.cluster_centers_).float()
+        # prototype_list = prototype_list.to(param_config.device)
+        # cluster_ids_x, cluster_centers = kmeans(
+        #     X=x, num_clusters=n_rules, distance='euclidean', device=torch.device(x.device)
+        # )
         # kmeans = KMeans(n_clusters=n_rules, init="random", random_state=420).fit(x)
         self.n_rules = n_rules
         # self.center_list = torch.tensor(kmeans.cluster_centers_).float()

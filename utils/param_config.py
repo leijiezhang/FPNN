@@ -18,6 +18,21 @@ class ParamConfig(object):
         self.n_rules = nrules  # number of rules in stage 1
         self.n_rules_list = []
 
+        self.gni_sigma = 0.0
+        self.drop_rate = 0.0
+
+        self.inference = 'nuts'
+        self.n_samples = 50
+        self.warmup = 12
+        self.step_size = 0.001
+        self.num_steps = 40
+        # svi parameter
+        self.lr_svi= 0.01
+        self.n_epoch_svi= 200
+        # svi parameter
+        self.lr_dgp = 0.001
+        self.n_epoch_dgp = 100
+
         self.dataset_list = ['CASP']
         self.dataset_folder = 'hrss'
         self.device = 'cuda:0'
@@ -40,6 +55,20 @@ class ParamConfig(object):
         self.n_epoch = config_content['n_epoch']
         self.n_kfolds = config_content['n_kfolds']
         self.noise_level = config_content['noise_level']
+        self.gni_sigma = config_content['gni_sigma']
+        self.drop_rate = config_content['drop_rate']
+
+        self.inference = config_content['inference']
+        self.n_samples = config_content['n_samples']
+        self.warmup = config_content['warmup']
+        self.step_size = config_content['step_size']
+        self.num_steps = config_content['num_steps']
+        # svi parameter
+        self.lr_svi = config_content['lr_svi']
+        self.n_epoch_svi = config_content['n_epoch_svi']
+        # dgp parameter
+        self.lr_dgp = config_content['lr_dgp']
+        self.n_epoch_dgp = config_content['n_epoch_dgp']
 
         self.n_rules = config_content['n_rules']
         self.lr = config_content['lr']

@@ -1,5 +1,5 @@
 import torch
-from rules import RuleBase
+from models.rules import RuleBase
 import abc
 
 

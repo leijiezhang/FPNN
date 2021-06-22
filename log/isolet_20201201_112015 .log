@@ -1,9 +1,0 @@
-[0;30m[2020-12-01 11:20:15] [INFO] dataset : isolet[0m
-[0;30m[2020-12-01 11:20:15] [INFO] prototype number : 50[0m
-[0;30m[2020-12-01 11:20:15] [INFO] batch_size : 3000[0m
-[0;30m[2020-12-01 11:20:15] [INFO] epoch_size : 500[0m
-[0;34m[2020-12-01 11:20:18] [DEBUG] =====starting on ['isolet_all']=======[0m
-[0;32m[2020-12-01 11:20:18] [WARNING] =====Mission: Classification=======[0m
-[0;32m[2020-12-01 11:20:18] [WARNING] =====k_fold: 1=======[0m
-[0;30m[2020-12-01 11:20:58] [INFO] Accuracy of training data using SVM: 0.9951907396316528[0m
-[0;30m[2020-12-01 11:20:58] [INFO] Accuracy of test data using SVM: 0.9640564918518066[0m

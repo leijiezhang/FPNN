@@ -1,7 +1,0 @@
-[0;30m[2020-11-29 14:46:04] [INFO] dataset : sdd[0m
-[0;30m[2020-11-29 14:46:04] [INFO] prototype number : 50[0m
-[0;30m[2020-11-29 14:46:04] [INFO] batch_size : 3000[0m
-[0;30m[2020-11-29 14:46:04] [INFO] epoch_size : 200[0m
-[0;34m[2020-11-29 14:46:07] [DEBUG] =====starting on ['SDD']=======[0m
-[0;32m[2020-11-29 14:46:07] [WARNING] =====Mission: Classification=======[0m
-[0;32m[2020-11-29 14:46:07] [WARNING] =====k_fold: 1=======[0m
