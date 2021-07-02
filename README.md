@@ -13,7 +13,7 @@ numpy=1.19.2
 scikit-learn=0.23.2
 
 
-# commond
+# command
 python main.py --m 'bnn' --d 'wine' --c 'cuda:1' --nl 0.0 --inference 'nuts'
 
 python main.py --m 'bnn' --d 'wine' --c 'cuda:1' --nl 0.5 --inference 'nuts'
